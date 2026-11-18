@@ -408,7 +408,17 @@ const TROPHY = `<svg class="trophy" viewBox="0 0 200 200" xmlns="http://www.w3.o
   <path d="M100 56 l6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2z" fill="#FFFFFF"/>
 </svg>`;
 
-function todayText() {
+// 오늘 한 공부를 첫 화면(오늘의 공부)에 알려 주는 기록. 날짜가 바뀌면 새로 시작한다
+function logToday(subj, label) {
+  try {
+    const k = "study-today-v1", n = new Date(), day = n.getFullYear() + "-" + (n.getMonth() + 1) + "-" + n.getDate();
+    let s = JSON.parse(localStorage.getItem(k)) || {};
+    if (s.date !== day || !s.done) s = {date: day, done: {}};
+    const a = s.done[subj] || (s.done[subj] = []);
+    if (!a.includes(label)) a.push(label);
+    localStorage.setItem(k, JSON.stringify(s));
+  } catch (e) {}
+}function todayText() {
   const d = new Date(), w = "일월화수목금토"[d.getDay()];
   return `<span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
 }
@@ -431,7 +441,6 @@ function renderHome() {
     <section class="card hero">
       ${MASCOT("튜브를 타고 지호를 반기는 시나모롤", "bob")}
       <h2><span class="nw">오늘은</span> <span class="nw">받아쓰기 시간</span></h2>
-      <p class="date">${todayText()}</p>
       <p class="lead">급수를 골라서 빈칸 채우기와 받아쓰기를 해 보자~</p>
     </section>
     <section class="days" aria-label="급수 고르기">${cards}</section>
@@ -511,7 +520,7 @@ function nextAction() {
 }
 
 function finishMc() {
-  state.lv[cur].mc.done = true; save();
+  state.lv[cur].mc.done = true; save(); logToday("dict", LEVELS[cur].g + "급 빈칸");
   if (checkAll()) return;
   const s = mcScore(cur), L = LEVELS[cur];
   const miss = L.qs.filter(q => state.lv[cur].mc.res[q.n] !== true);
@@ -569,7 +578,7 @@ function renderDict() {
 }
 
 function finishDict() {
-  const d = state.lv[cur].dict; d.done = true; d.i = 10; save();
+  const d = state.lv[cur].dict; d.done = true; d.i = 10; save(); logToday("dict", LEVELS[cur].g + "급 받아쓰기");
   renderResult(true);
 }
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F2EDFD">
-<title>받침 맞춤법 퀴즈</title>
+<title>맞춤법 퀴즈</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
 <style>
 /* Layout: 첫 화면(시나모롤·날짜·Day1~5) → 한 화면에 한 문제(밑줄 친 틀린 말 → 바르게 고친 말 고르기) → 완료 → 축하 */
@@ -274,7 +274,17 @@ const TROPHY = `<svg class="trophy" viewBox="0 0 200 200" xmlns="http://www.w3.o
   <path d="M100 56 l6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2z" fill="#FFFFFF"/>
 </svg>`;
 
-function todayText() {
+// 오늘 한 공부를 첫 화면(오늘의 공부)에 알려 주는 기록. 날짜가 바뀌면 새로 시작한다
+function logToday(subj, label) {
+  try {
+    const k = "study-today-v1", n = new Date(), day = n.getFullYear() + "-" + (n.getMonth() + 1) + "-" + n.getDate();
+    let s = JSON.parse(localStorage.getItem(k)) || {};
+    if (s.date !== day || !s.done) s = {date: day, done: {}};
+    const a = s.done[subj] || (s.done[subj] = []);
+    if (!a.includes(label)) a.push(label);
+    localStorage.setItem(k, JSON.stringify(s));
+  } catch (e) {}
+}function todayText() {
   const d = new Date(), w = "일월화수목금토"[d.getDay()];
   return `<span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
 }
@@ -293,7 +303,6 @@ function renderHome() {
     <section class="card hero">
       ${MASCOT("아이스크림 속에서 지호를 반기는 시나모롤", "bob")}
       <h2><span class="nw">오늘은</span> <span class="nw">국어 시간</span></h2>
-      <p class="date">${todayText()}</p>
       <p class="lead">헷갈리는 받침, 같이 바르게 고쳐 보자~</p>
     </section>
     <section class="days" aria-label="날짜별 문제">${cards}</section>
@@ -382,7 +391,7 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save();
+  const d = state.days[cur]; d.done = true; save(); logToday("kor", "Day " + (cur + 1));
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const s = score(cur);
   main.innerHTML = `<section class="card center">

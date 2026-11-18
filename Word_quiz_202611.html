@@ -131,6 +131,13 @@ summary { cursor: pointer; font-family: var(--display); color: var(--muted); }
 th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; } th { color: var(--muted); font-weight: 400; }
 td.en { font-family: var(--en); font-weight: 700; }
 .note { color: var(--muted); font-size: 15px; margin: 0; }
+.voiceset { display: flex; flex-direction: column; gap: 8px; }
+.voice-sel { width: 100%; font-size: 18px; padding: 8px 10px; border: 2px solid var(--line); border-radius: 12px; background: #FFFFFF; color: var(--ink); margin: 4px 0 8px; }
+.rate-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.rate { font-family: var(--display); font-size: 18px; border: 2px solid var(--line); border-radius: 99px; padding: 6px 16px; background: #FFFFFF; color: var(--ink); cursor: pointer; }
+.rate.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.voiceset .note { font-size: 15px; line-height: 1.5; }
+.voiceset .listen { align-self: flex-start; }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
 
 /* 피드백 팝업 (파스텔 분홍, 화면 가운데) */
@@ -278,15 +285,60 @@ function josa(word, withFinal, noFinal) {
   if (!ch) return noFinal;
   return (ch.charCodeAt(0) - 0xAC00) % 28 ? withFinal : noFinal;
 }
-function speak(text, rate) {
+// 영어 목소리 고르기 (두 영어 퀴즈가 같은 설정을 함께 씀)
+const VOICE_KEY = "english-voice-v1";
+const RATES = [["천천히", 0.85], ["보통", 1], ["조금 빠르게", 1.15]];
+let voicePref = (() => { try { return JSON.parse(localStorage.getItem(VOICE_KEY)) || {}; } catch (e) { return {}; } })();
+const enVoices = () => { try { return speechSynthesis.getVoices().filter(v => /^en([-_]|$)/i.test(v.lang)); } catch (e) { return []; } };
+const voiceScore = v => {
+  const n = (v.name + " " + v.voiceURI).toLowerCase(); let s = 0;
+  if (/^en[-_]us/i.test(v.lang)) s += 3;
+  if (/natural|neural|online|premium|enhanced|network/.test(n)) s += 6;
+  if (/google/.test(n)) s += 3;
+  if (/female|samantha|aria|jenny|ava|allison|susan|zira|emma|michelle|ana\b|karen|moira|serena|libby|sonia|tessa|nicky|joanna|salli|kendra|kimberly|ivy/.test(n)) s += 4;
+  if (/\bmale\b|david|mark|guy|daniel|alex\b|fred|tom\b|aaron|ryan|eric|christopher|roger|steffan|brian|matthew|justin|joey/.test(n)) s -= 3;
+  if (/compact|espeak/.test(n)) s -= 5;
+  return s;
+};
+function pickVoice() {
+  const vs = enVoices();
+  if (!vs.length) return null;
+  return vs.find(v => v.voiceURI === voicePref.uri) || vs.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+}
+function savePref() { try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePref)); } catch (e) {} }
+const TEST_EN = "Hello! Let's read English together.";
+function voiceSetHTML() {
+  if (!CAN_SPEAK) return "";
+  return `<details class="voiceset"><summary>목소리 바꾸기 (어른용)</summary>
+    <label class="note" for="voiceSel">영어 목소리</label>
+    <select id="voiceSel" class="voice-sel"></select>
+    <div class="rate-row">${RATES.map(([t, r]) => `<button class="rate" data-r="${r}">${t}</button>`).join("")}</div>
+    <button class="listen" id="voiceTest">🔊 들어 보기</button>
+    <p class="note" id="voiceTip"></p></details>`;
+}
+function bindVoiceSet() {
+  const sel = $("voiceSel"); if (!sel) return;
+  const fill = () => {
+    if (!$("voiceSel")) return;
+    const vs = enVoices().slice().sort((a, b) => voiceScore(b) - voiceScore(a)), cur = pickVoice();
+    sel.innerHTML = vs.length ? vs.map(v => `<option value="${v.voiceURI.replace(/"/g, "&quot;")}"${cur && v.voiceURI === cur.voiceURI ? " selected" : ""}>${v.name} (${v.lang})</option>`).join("") : `<option>기본 목소리</option>`;
+    $("voiceTip").textContent = vs.length <= 1 ? "목소리가 하나뿐이라면 휴대폰 설정 → 글자 읽어주기(TTS)에서 영어 목소리를 내려받아 바꿀 수 있어요." : "";
+    const r = voicePref.rate || 1;
+    document.querySelectorAll(".rate").forEach(b => b.classList.toggle("on", Number(b.dataset.r) === r));
+  };
+  fill();
+  try { speechSynthesis.addEventListener("voiceschanged", fill); } catch (e) {}
+  sel.addEventListener("change", () => { voicePref.uri = sel.value; savePref(); speak(TEST_EN); });
+  document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speak(TEST_EN); }));
+  $("voiceTest").addEventListener("click", () => speak(TEST_EN));
+}function speak(text, rate) {
   if (!CAN_SPEAK) return;
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US"; u.rate = rate || 0.75;
-    const vs = speechSynthesis.getVoices();
-    const v = vs.find(v => /^en(-|_)US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang));
-    if (v) u.voice = v;
+    u.lang = "en-US"; u.rate = (rate || 0.75) * (voicePref.rate || 1);
+    const v = pickVoice();
+    if (v) { u.voice = v; u.lang = v.lang; }
     speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -308,7 +360,17 @@ const FINAL_ICON = `<svg class="dimg" viewBox="0 0 100 100" xmlns="http://www.w3
   <g transform="translate(62 62) rotate(40)"><rect x="-5" y="-26" width="10" height="30" rx="2" fill="#F5A9BF" stroke="#C2537A" stroke-width="2"/><path d="M-5 4 l5 10 5 -10z" fill="#FFE9C9" stroke="#C2537A" stroke-width="2" stroke-linejoin="round"/></g>
 </svg>`;
 
-function todayText() {
+// 오늘 한 공부를 첫 화면(오늘의 공부)에 알려 주는 기록. 날짜가 바뀌면 새로 시작한다
+function logToday(subj, label) {
+  try {
+    const k = "study-today-v1", n = new Date(), day = n.getFullYear() + "-" + (n.getMonth() + 1) + "-" + n.getDate();
+    let s = JSON.parse(localStorage.getItem(k)) || {};
+    if (s.date !== day || !s.done) s = {date: day, done: {}};
+    const a = s.done[subj] || (s.done[subj] = []);
+    if (!a.includes(label)) a.push(label);
+    localStorage.setItem(k, JSON.stringify(s));
+  } catch (e) {}
+}function todayText() {
   const d = new Date(), w = "일월화수목금토"[d.getDay()];
   return `<span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
 }
@@ -329,12 +391,13 @@ function renderHome() {
     <section class="card hero">
       ${MASCOT("모자 쓰고 스케이트보드를 타고 지호를 반기는 시나모롤", "bob")}
       <h2><span class="nw">오늘은</span> <span class="nw">영어 시간</span></h2>
-      <p class="date">${todayText()}</p>
       <p class="lead">우리 영어 단어 같이 익혀 보자~</p>
     </section>
     <section class="days" aria-label="날짜별 문제">${cards}</section>
     <p class="note" style="text-align:center">Day 1~5로 단어를 익히고, 마지막에 최종 평가로 직접 써 봐요!</p>
-    ${allDone ? `<div class="btns"><button class="btn soft" id="party">축하 다시 보기</button></div>` : ""}`;
+    ${allDone ? `<div class="btns"><button class="btn soft" id="party">축하 다시 보기</button></div>` : ""}
+    ${voiceSetHTML()}`;
+  bindVoiceSet();
   main.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => startDay(Number(b.dataset.day))));
   if (allDone) $("party").addEventListener("click", renderCelebrate);
 }
@@ -473,7 +536,7 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save();
+  const d = state.days[cur]; d.done = true; save(); logToday("word", cur === 5 ? "최종 평가" : "Day " + (cur + 1));
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const total = DAYS[cur].length, s = score(cur);
   const msg = cur === 5

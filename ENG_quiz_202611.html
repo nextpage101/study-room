@@ -121,6 +121,13 @@ summary { cursor: pointer; font-family: var(--display); color: var(--muted); }
 th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; } th { color: var(--muted); font-weight: 400; }
 td.en { font-family: var(--en); font-weight: 700; }
 .note { color: var(--muted); font-size: 15px; margin: 0; }
+.voiceset { display: flex; flex-direction: column; gap: 8px; }
+.voice-sel { width: 100%; font-size: 18px; padding: 8px 10px; border: 2px solid var(--line); border-radius: 12px; background: #FFFFFF; color: var(--ink); margin: 4px 0 8px; }
+.rate-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.rate { font-family: var(--display); font-size: 18px; border: 2px solid var(--line); border-radius: 99px; padding: 6px 16px; background: #FFFFFF; color: var(--ink); cursor: pointer; }
+.rate.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.voiceset .note { font-size: 15px; line-height: 1.5; }
+.voiceset .listen { align-self: flex-start; }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
 
 /* 피드백 팝업 (파스텔 분홍, 화면 가운데) */
@@ -207,57 +214,57 @@ const MASCOT = (alt, extra) => `<img class="mascot ${extra || ""}" src="${MASCOT
 const THEME = {1: "학교와 가족", 2: "동물", 3: "음식", 4: "날씨와 계절", 5: "하루 생활과 놀이"};
 
 // [주제, 영어 문장, 맞는 해석, 틀린 해석1, 틀린 해석2, 핵심 단어, 그 뜻]
-// 읽고 고르기 문장은 AR 2.5 안팎, 듣고 고르기 문장은 AR 2.0 안팎 (하루 순서에서 짝수 번째가 듣기 → 주제 1·3·5는 짝수 번호, 주제 2·4는 홀수 번호가 듣기)
+// 읽고 고르기 문장은 AR 2.0~2.3(평균 9~10단어), 듣고 고르기 문장은 AR 2.0 안팎 (하루 순서에서 짝수 번째가 듣기 → 주제 1·3·5는 짝수 번호, 주제 2·4는 홀수 번호가 듣기)
 const QS = [
-  [1, "My little brother lost a tooth, so he put it under his pillow.", "남동생이 이가 빠져서 베개 밑에 넣어 두었어요.", "남동생이 이가 아파서 치과에 갔어요.", "남동생이 장난감을 잃어버려서 베개 밑을 찾아봤어요.", "pillow", "베개"],
+  [1, "My brother lost a tooth. He put it under his pillow.", "남동생이 이가 빠져서 베개 밑에 넣어 두었어요.", "남동생이 이가 아파서 치과에 갔어요.", "남동생이 장난감을 잃어버려서 베개 밑을 찾아봤어요.", "pillow", "베개"],
   [1, "My mom and I walk to school every day.", "엄마와 나는 매일 걸어서 학교에 가요.", "엄마와 나는 매일 버스를 타고 학교에 가요.", "아빠와 나는 주말마다 걸어서 공원에 가요.", "walk to school", "걸어서 학교에 가다"],
-  [1, "Our teacher said we could play outside after we finished our work.", "선생님이 할 일을 다 끝내면 밖에서 놀아도 된다고 하셨어요.", "선생님이 할 일을 다 끝낼 때까지 교실에 있어야 한다고 하셨어요.", "선생님이 밖에서 먼저 놀고 나서 할 일을 하라고 하셨어요.", "after we finished", "우리가 다 끝낸 후에"],
+  [1, "Our teacher said we can play outside after class.", "선생님이 수업이 끝나면 밖에서 놀아도 된다고 하셨어요.", "선생님이 수업이 끝날 때까지 교실에 있어야 한다고 하셨어요.", "선생님이 밖에서 먼저 놀고 나서 공부하라고 하셨어요.", "after class", "수업이 끝난 후에"],
   [1, "My grandpa has a big garden with many flowers.", "할아버지는 꽃이 많은 큰 정원을 가지고 계세요.", "할아버지는 나무가 많은 작은 정원을 가지고 계세요.", "할머니는 꽃이 많은 큰 꽃집을 하세요.", "garden", "정원"],
-  [1, "When my sister came home, she told us about her school trip.", "언니가 집에 와서 우리에게 학교 소풍 이야기를 해 주었어요.", "언니가 학교에 가기 전에 소풍 가방을 챙겼어요.", "언니가 집에 와서 우리에게 새 친구 이야기를 해 주었어요.", "school trip", "학교 소풍"],
+  [1, "My sister came home. She told us about her school trip.", "언니가 집에 와서 우리에게 학교 소풍 이야기를 해 주었어요.", "언니가 학교에 가기 전에 소풍 가방을 챙겼어요.", "언니가 집에 와서 우리에게 새 친구 이야기를 해 주었어요.", "school trip", "학교 소풍"],
   [1, "On Sunday, I help my dad wash the car.", "일요일에 나는 아빠가 세차하는 것을 도와요.", "일요일에 아빠가 내가 자전거 닦는 것을 도와주세요.", "토요일에 나는 아빠가 설거지하는 것을 도와요.", "wash the car", "세차하다"],
-  [1, "I forgot my pencil case at home, so my friend lent me a pencil.", "내가 필통을 집에 두고 와서 친구가 연필을 빌려주었어요.", "내가 필통을 잃어버려서 엄마가 새 연필을 사 주셨어요.", "친구가 필통을 집에 두고 와서 내가 연필을 빌려주었어요.", "lent", "빌려주었다"],
+  [1, "I forgot my pencil case, so my friend gave me a pencil.", "내가 필통을 깜빡해서 친구가 연필을 주었어요.", "내가 필통을 잃어버려서 엄마가 새 연필을 사 주셨어요.", "친구가 필통을 깜빡해서 내가 연필을 주었어요.", "forgot", "깜빡했다, 잊었다"],
   [1, "We read a funny book in class today.", "오늘 수업 시간에 우리는 재미있는 책을 읽었어요.", "오늘 수업 시간에 우리는 슬픈 책을 읽었어요.", "어제 집에서 우리는 재미있는 영화를 봤어요.", "funny", "재미있는, 웃긴"],
-  [1, "My baby sister started to cry because she could not find her doll.", "여동생이 인형을 찾을 수 없어서 울기 시작했어요.", "여동생이 인형을 찾아서 웃기 시작했어요.", "여동생이 인형을 친구에게 주고 나서 울기 시작했어요.", "because", "~ 때문에, ~해서"],
+  [1, "My baby sister cried because she lost her doll.", "여동생이 인형을 잃어버려서 울었어요.", "여동생이 인형을 찾아서 웃었어요.", "여동생이 인형을 친구에게 주고 나서 울었어요.", "because", "~ 때문에, ~해서"],
   [1, "My uncle lives in a small town by the sea.", "우리 삼촌은 바닷가 옆 작은 마을에 살아요.", "우리 삼촌은 산 옆 큰 도시에 살아요.", "우리 이모는 바닷가 옆 작은 가게에서 일해요.", "by the sea", "바닷가 옆에"],
   [2, "The cat is sleeping on the warm sofa.", "고양이가 따뜻한 소파 위에서 자고 있어요.", "고양이가 차가운 바닥에서 자고 있어요.", "강아지가 따뜻한 소파 위에서 놀고 있어요.", "sleeping", "자는 중"],
-  [2, "The puppy was so tired that it fell asleep on my lap.", "강아지가 너무 피곤해서 내 무릎 위에서 잠들었어요.", "강아지가 너무 신나서 내 무릎 위에서 뛰었어요.", "고양이가 너무 피곤해서 소파 위에서 잠들었어요.", "fell asleep", "잠들었다"],
+  [2, "The puppy was tired, so it slept on my lap.", "강아지가 피곤해서 내 무릎 위에서 잤어요.", "강아지가 신나서 내 무릎 위에서 뛰었어요.", "고양이가 피곤해서 소파 위에서 잤어요.", "lap", "무릎"],
   [2, "A frog can jump very high and far.", "개구리는 아주 높이, 멀리 뛸 수 있어요.", "개구리는 아주 빨리 헤엄칠 수 있어요.", "개구리는 높이 뛸 수 없어요.", "jump", "뛰다"],
-  [2, "A squirrel hid some nuts in the ground before winter came.", "다람쥐가 겨울이 오기 전에 땅속에 도토리를 숨겼어요.", "다람쥐가 겨울이 지나고 나서 땅속에서 도토리를 찾았어요.", "새가 겨울이 오기 전에 나무 위에 둥지를 지었어요.", "hid", "숨겼다"],
+  [2, "The squirrel hid nuts in the ground for winter.", "다람쥐가 겨울을 위해 땅속에 도토리를 숨겼어요.", "다람쥐가 겨울이 지나고 땅속에서 도토리를 찾았어요.", "새가 겨울을 위해 나무 위에 둥지를 지었어요.", "hid", "숨겼다"],
   [2, "The baby duck swims behind its mother.", "아기 오리가 엄마 오리 뒤에서 헤엄쳐요.", "아기 오리가 엄마 오리 앞에서 걸어가요.", "엄마 오리가 아기 오리 뒤에서 헤엄쳐요.", "behind", "~ 뒤에"],
-  [2, "The elephant used its long nose to spray water on its back.", "코끼리가 긴 코로 자기 등에 물을 뿌렸어요.", "코끼리가 긴 코로 나무에서 사과를 땄어요.", "코끼리가 큰 귀로 자기 등에 부채질을 했어요.", "spray", "뿌리다"],
+  [2, "The elephant used its long nose to spray water.", "코끼리가 긴 코로 물을 뿌렸어요.", "코끼리가 긴 코로 나무에서 사과를 땄어요.", "코끼리가 큰 귀로 부채질을 했어요.", "spray", "뿌리다"],
   [2, "My dog barks when someone comes to the door.", "누가 문 앞에 오면 우리 강아지가 짖어요.", "누가 문 앞에 오면 우리 강아지가 숨어요.", "우리 고양이는 문 앞에서 잠을 자요.", "barks", "짖는다"],
-  [2, "A little bird fell out of its nest, but its mother came back for it.", "작은 새가 둥지에서 떨어졌지만 엄마 새가 다시 데리러 왔어요.", "작은 새가 둥지를 떠나 멀리 날아갔어요.", "엄마 새가 둥지에서 떨어졌지만 아기 새가 도와주었어요.", "fell out of", "~에서 떨어졌다"],
+  [2, "A baby bird fell from its nest. Its mom helped it.", "아기 새가 둥지에서 떨어졌는데 엄마 새가 도와주었어요.", "아기 새가 둥지를 떠나 멀리 날아갔어요.", "엄마 새가 둥지에서 떨어졌는데 아기 새가 도와주었어요.", "nest", "둥지"],
   [2, "The rabbit has long ears and a short tail.", "토끼는 긴 귀와 짧은 꼬리를 가졌어요.", "토끼는 짧은 귀와 긴 꼬리를 가졌어요.", "여우는 긴 귀와 짧은 꼬리를 가졌어요.", "tail", "꼬리"],
-  [2, "We watched the monkeys at the zoo, and one of them waved at us.", "우리는 동물원에서 원숭이들을 봤는데, 그중 한 마리가 우리에게 손을 흔들었어요.", "우리는 동물원에서 원숭이들에게 바나나를 주었어요.", "우리는 동물원에서 원숭이들을 봤는데, 그중 한 마리가 잠을 자고 있었어요.", "waved", "손을 흔들었다"],
-  [3, "Mom let me pour the flour when we baked a cake together.", "엄마와 케이크를 구울 때 엄마가 나에게 밀가루를 붓게 해 주셨어요.", "엄마와 케이크를 구울 때 엄마가 나에게 달걀을 깨게 해 주셨어요.", "엄마와 케이크를 사 온 다음 내가 초를 꽂았어요.", "flour", "밀가루"],
+  [2, "We saw monkeys at the zoo. One waved at us.", "우리는 동물원에서 원숭이들을 봤는데, 한 마리가 우리에게 손을 흔들었어요.", "우리는 동물원에서 원숭이들에게 바나나를 주었어요.", "우리는 동물원에서 원숭이들을 봤는데, 한 마리가 잠을 자고 있었어요.", "waved", "손을 흔들었다"],
+  [3, "Mom let me pour the flour for our cake.", "엄마가 케이크를 만들 때 나에게 밀가루를 붓게 해 주셨어요.", "엄마가 케이크를 만들 때 나에게 달걀을 깨게 해 주셨어요.", "엄마와 케이크를 사 온 다음 내가 초를 꽂았어요.", "flour", "밀가루"],
   [3, "For dinner, I like to eat rice with soup.", "저녁으로 나는 밥을 국이랑 먹는 걸 좋아해요.", "저녁으로 나는 빵을 우유랑 먹는 걸 좋아해요.", "아침으로 나는 밥을 국이랑 먹는 걸 싫어해요.", "rice", "밥, 쌀"],
-  [3, "I wanted the last cookie, but I shared it with my friend.", "나는 마지막 쿠키를 먹고 싶었지만 친구와 나눠 먹었어요.", "나는 마지막 쿠키를 친구 몰래 혼자 먹었어요.", "친구가 마지막 쿠키를 나에게 다 주었어요.", "shared", "나눴다"],
+  [3, "I shared the last cookie with my best friend.", "나는 마지막 쿠키를 친한 친구와 나눠 먹었어요.", "나는 마지막 쿠키를 친구 몰래 혼자 먹었어요.", "친구가 마지막 쿠키를 나에게 다 주었어요.", "shared", "나눴다"],
   [3, "Dad made pancakes for breakfast today.", "아빠가 오늘 아침으로 팬케이크를 만들어 주셨어요.", "엄마가 오늘 점심으로 팬케이크를 만들어 주셨어요.", "아빠가 오늘 아침으로 달걀을 구워 주셨어요.", "breakfast", "아침밥"],
-  [3, "The ice cream started to melt because we sat in the hot sun.", "우리가 뜨거운 햇볕 아래 앉아 있어서 아이스크림이 녹기 시작했어요.", "우리가 시원한 그늘에 앉아 있어서 아이스크림이 녹지 않았어요.", "우리가 뜨거운 햇볕 아래에서 아이스크림을 사 먹었어요.", "melt", "녹다"],
+  [3, "The ice cream melted fast in the hot sun.", "뜨거운 햇볕 아래에서 아이스크림이 빨리 녹았어요.", "시원한 그늘에서 아이스크림이 녹지 않았어요.", "뜨거운 햇볕 아래에서 아이스크림을 사 먹었어요.", "melted", "녹았다"],
   [3, "I am thirsty. Can I have some water, please?", "목이 말라요. 물 좀 주실 수 있어요?", "배가 고파요. 빵 좀 주실 수 있어요?", "목이 말라서 주스를 다 마셨어요.", "thirsty", "목마른"],
-  [3, "We picked strawberries at the farm and ate some of them on the way home.", "우리는 농장에서 딸기를 따고, 집에 오는 길에 몇 개를 먹었어요.", "우리는 시장에서 딸기를 사고, 집에 와서 다 먹었어요.", "우리는 농장에서 사과를 따고, 집에 오는 길에 몇 개를 먹었어요.", "picked", "땄다"],
+  [3, "We picked strawberries at the farm and ate some.", "우리는 농장에서 딸기를 따서 몇 개를 먹었어요.", "우리는 시장에서 딸기를 사서 집에 와서 다 먹었어요.", "우리는 농장에서 사과를 따서 몇 개를 먹었어요.", "picked", "땄다"],
   [3, "This yellow lemon tastes very sour.", "이 노란 레몬은 맛이 아주 셔요.", "이 노란 레몬은 맛이 아주 달아요.", "이 노란 사탕은 맛이 아주 셔요.", "sour", "신, 시큼한"],
-  [3, "My brother did not like the green beans, so he hid them under his rice.", "오빠가 초록 콩을 싫어해서 밥 밑에 숨겼어요.", "오빠가 초록 콩을 좋아해서 내 것까지 먹었어요.", "오빠가 초록 콩을 싫어해서 강아지에게 주었어요.", "green beans", "초록 콩"],
+  [3, "My brother hid his green beans under his rice.", "오빠가 초록 콩을 밥 밑에 숨겼어요.", "오빠가 초록 콩을 좋아해서 내 것까지 먹었어요.", "오빠가 초록 콩을 강아지에게 주었어요.", "green beans", "초록 콩"],
   [3, "We eat popcorn when we watch a movie.", "우리는 영화를 볼 때 팝콘을 먹어요.", "우리는 영화를 본 다음에 피자를 먹어요.", "우리는 책을 읽을 때 팝콘을 먹어요.", "popcorn", "팝콘"],
   [4, "It is sunny, so we go to the park.", "날씨가 맑아서 우리는 공원에 가요.", "비가 와서 우리는 집에 있어요.", "날씨가 맑아서 우리는 바닷가에 가요.", "sunny", "해가 쨍쨍한, 맑은"],
-  [4, "It snowed all night, so the whole town looked white in the morning.", "밤새 눈이 와서 아침에는 온 동네가 하얗게 보였어요.", "밤새 비가 와서 아침에는 길이 다 젖어 있었어요.", "아침부터 눈이 와서 밤에는 온 동네가 하얗게 보였어요.", "all night", "밤새"],
+  [4, "It snowed all night, so the town was white.", "밤새 눈이 와서 동네가 하얗게 되었어요.", "밤새 비가 와서 길이 다 젖었어요.", "아침부터 눈이 와서 밤에는 동네가 하얗게 되었어요.", "all night", "밤새"],
   [4, "I wear my boots on rainy days.", "나는 비 오는 날에 장화를 신어요.", "나는 눈 오는 날에 장갑을 껴요.", "나는 맑은 날에 운동화를 신어요.", "boots", "장화"],
-  [4, "When the storm stopped, we saw a big puddle near our house.", "폭풍이 멈추자 우리 집 근처에 커다란 물웅덩이가 보였어요.", "폭풍이 오기 전에 우리 집 근처에 커다란 나무가 쓰러졌어요.", "폭풍이 멈추자 우리 집 앞에 무지개가 떴어요.", "puddle", "물웅덩이"],
+  [4, "After the rain, we jumped in a big puddle.", "비가 그친 뒤 우리는 큰 물웅덩이에서 첨벙 뛰었어요.", "비가 오기 전에 우리는 큰 나무 밑에 숨었어요.", "비가 그친 뒤 우리는 무지개를 보았어요.", "puddle", "물웅덩이"],
   [4, "The leaves fall from the trees in fall.", "가을에는 나무에서 나뭇잎이 떨어져요.", "봄에는 나무에서 나뭇잎이 떨어져요.", "가을에는 나무에 열매가 열려요.", "leaves", "나뭇잎들"],
-  [4, "The wind was so strong that my umbrella turned inside out.", "바람이 너무 세서 내 우산이 뒤집혔어요.", "비가 너무 많이 와서 내 우산이 찢어졌어요.", "바람이 너무 세서 내 모자가 날아갔어요.", "inside out", "뒤집혀서"],
+  [4, "The wind was strong, and my hat flew away.", "바람이 세서 내 모자가 날아갔어요.", "비가 많이 와서 내 우산이 찢어졌어요.", "바람이 세서 내 우산이 뒤집혔어요.", "flew away", "날아갔다"],
   [4, "In summer, it is hot and we eat ice pops.", "여름에는 덥고 우리는 아이스바를 먹어요.", "겨울에는 춥고 우리는 군고구마를 먹어요.", "여름에는 덥고 우리는 수박을 먹어요.", "ice pops", "아이스바"],
-  [4, "We stayed inside all day because it was too cold to play outside.", "밖에서 놀기에 너무 추워서 우리는 하루 종일 안에 있었어요.", "밖이 너무 더워서 우리는 하루 종일 수영장에 있었어요.", "우리는 하루 종일 밖에서 눈사람을 만들었어요.", "too cold", "너무 추운"],
+  [4, "It was too cold, so we played inside all day.", "너무 추워서 우리는 하루 종일 안에서 놀았어요.", "너무 더워서 우리는 하루 종일 수영장에 있었어요.", "우리는 하루 종일 밖에서 눈사람을 만들었어요.", "too cold", "너무 추운"],
   [4, "Look! There is a rainbow after the rain.", "봐! 비가 온 뒤에 무지개가 떴어.", "봐! 비가 오기 전에 구름이 꼈어.", "봐! 눈이 온 뒤에 무지개가 떴어.", "rainbow", "무지개"],
-  [4, "The spring flowers opened when the warm sun came out after the rain.", "비가 그치고 따뜻한 해가 나오자 봄꽃이 피었어요.", "비가 오기 시작하자 봄꽃이 모두 졌어요.", "비가 그치고 따뜻한 해가 나오자 나뭇잎이 떨어졌어요.", "opened", "(꽃이) 피었다"],
-  [5, "I couldn't find my shoes because my dog took them to his bed.", "강아지가 내 신발을 자기 침대로 가져가서 신발을 찾을 수 없었어요.", "내가 신발을 침대 밑에 두어서 강아지가 찾을 수 없었어요.", "강아지가 내 양말을 자기 침대로 가져가서 양말을 찾을 수 없었어요.", "couldn't find", "찾을 수 없었다"],
+  [4, "The sun came out, and the spring flowers opened.", "해가 나오자 봄꽃이 피었어요.", "비가 오기 시작하자 봄꽃이 모두 졌어요.", "해가 나오자 나뭇잎이 떨어졌어요.", "opened", "(꽃이) 피었다"],
+  [5, "My dog took my new shoes to his bed.", "강아지가 내 새 신발을 자기 침대로 가져갔어요.", "내가 새 신발을 침대 밑에 두었어요.", "강아지가 내 양말을 자기 침대로 가져갔어요.", "took", "가져갔다"],
   [5, "I brush my teeth after I eat.", "나는 밥을 먹고 나서 이를 닦아요.", "나는 밥을 먹기 전에 이를 닦아요.", "나는 밥을 먹고 나서 손을 씻어요.", "brush my teeth", "이를 닦다"],
-  [5, "Before I go to sleep, Dad reads me a chapter of a funny book.", "내가 자기 전에 아빠가 재미있는 책을 한 부분씩 읽어 주세요.", "내가 일어나면 아빠가 재미있는 노래를 불러 주세요.", "내가 자기 전에 엄마가 무서운 이야기를 들려주세요.", "chapter", "책의 한 부분"],
+  [5, "Every night before bed, Dad reads me a funny book.", "매일 밤 자기 전에 아빠가 재미있는 책을 읽어 주세요.", "매일 아침 일어나면 아빠가 재미있는 노래를 불러 주세요.", "매일 밤 자기 전에 엄마가 무서운 이야기를 들려주세요.", "before bed", "자기 전에"],
   [5, "After lunch, we play tag at the playground.", "점심을 먹고 우리는 놀이터에서 술래잡기를 해요.", "점심을 먹고 우리는 놀이터에서 그네를 타요.", "점심을 먹고 우리는 교실에서 술래잡기를 해요.", "play tag", "술래잡기하다"],
-  [5, "My friend and I built a tall tower with blocks, but it fell down.", "친구와 나는 블록으로 높은 탑을 쌓았지만 무너졌어요.", "친구와 나는 모래로 높은 성을 쌓았어요.", "친구와 나는 블록으로 높은 탑을 쌓아서 상을 받았어요.", "fell down", "무너졌다"],
+  [5, "We made a tall block tower, but it fell down.", "우리는 블록으로 높은 탑을 쌓았지만 무너졌어요.", "우리는 모래로 높은 성을 쌓았어요.", "우리는 블록으로 높은 탑을 쌓아서 상을 받았어요.", "fell down", "무너졌다"],
   [5, "On weekends, I ride my bike with my sister.", "주말마다 나는 언니와 함께 자전거를 타요.", "주말마다 나는 언니와 함께 그네를 타요.", "주말마다 언니는 친구와 함께 자전거를 타요.", "ride my bike", "자전거를 타다"],
-  [5, "I put on my coat and hat quickly because the school bus was coming.", "학교 버스가 오고 있어서 나는 서둘러 코트를 입고 모자를 썼어요.", "학교 버스가 늦게 와서 나는 천천히 코트를 입었어요.", "학교 버스가 오고 있어서 나는 서둘러 신발을 신었어요.", "quickly", "빠르게, 서둘러"],
+  [5, "The bus was coming, so I put on my coat fast.", "버스가 오고 있어서 나는 서둘러 코트를 입었어요.", "버스가 늦게 와서 나는 천천히 코트를 입었어요.", "버스가 오고 있어서 나는 서둘러 신발을 신었어요.", "fast", "빠르게, 서둘러"],
   [5, "Let's draw a picture of our house.", "우리 집 그림을 그리자.", "우리 학교 그림을 그리자.", "우리 집 사진을 찍자.", "draw", "그리다"],
-  [5, "After we cleaned up our room, Mom took us to the library to borrow books.", "우리가 방을 다 치운 다음 엄마가 책을 빌리러 도서관에 데려가 주셨어요.", "우리가 도서관에 다녀온 다음 엄마와 방을 치웠어요.", "우리가 방을 다 치운 다음 엄마가 장난감 가게에 데려가 주셨어요.", "borrow", "빌리다"],
+  [5, "After we cleaned up, Mom took us to the library.", "우리가 다 치운 다음 엄마가 도서관에 데려가 주셨어요.", "우리가 도서관에 다녀온 다음 엄마와 방을 치웠어요.", "우리가 다 치운 다음 엄마가 장난감 가게에 데려가 주셨어요.", "library", "도서관"],
   [5, "I take a bath and then go to bed.", "나는 목욕을 하고 나서 잠자리에 들어요.", "나는 잠자리에 들기 전에 책을 읽어요.", "나는 목욕을 하고 나서 밥을 먹어요.", "take a bath", "목욕하다"]
 ].map(([t, en, a, b, c, key, mean], i) => {
   const PERMS = [[0,1,2],[1,0,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0]];
@@ -287,14 +294,61 @@ function josa(word, withFinal, noFinal) {
   if (!ch) return noFinal;
   return (ch.charCodeAt(0) - 0xAC00) % 28 ? withFinal : noFinal;
 }
-function speak(text) {
+// 영어 목소리 고르기 (두 영어 퀴즈가 같은 설정을 함께 씀)
+const VOICE_KEY = "english-voice-v1";
+const RATES = [["천천히", 0.85], ["보통", 1], ["조금 빠르게", 1.15]];
+let voicePref = (() => { try { return JSON.parse(localStorage.getItem(VOICE_KEY)) || {}; } catch (e) { return {}; } })();
+const enVoices = () => { try { return speechSynthesis.getVoices().filter(v => /^en([-_]|$)/i.test(v.lang)); } catch (e) { return []; } };
+const voiceScore = v => {
+  const n = (v.name + " " + v.voiceURI).toLowerCase(); let s = 0;
+  if (/^en[-_]us/i.test(v.lang)) s += 3;
+  if (/natural|neural|online|premium|enhanced|network/.test(n)) s += 6;
+  if (/google/.test(n)) s += 3;
+  if (/female|samantha|aria|jenny|ava|allison|susan|zira|emma|michelle|ana\b|karen|moira|serena|libby|sonia|tessa|nicky|joanna|salli|kendra|kimberly|ivy/.test(n)) s += 4;
+  if (/\bmale\b|david|mark|guy|daniel|alex\b|fred|tom\b|aaron|ryan|eric|christopher|roger|steffan|brian|matthew|justin|joey/.test(n)) s -= 3;
+  if (/compact|espeak/.test(n)) s -= 5;
+  return s;
+};
+function pickVoice() {
+  const vs = enVoices();
+  if (!vs.length) return null;
+  return vs.find(v => v.voiceURI === voicePref.uri) || vs.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+}
+function savePref() { try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePref)); } catch (e) {} }
+const TEST_EN = "Hello! Let's read English together.";
+function voiceSetHTML() {
+  if (!CAN_SPEAK) return "";
+  return `<details class="voiceset"><summary>목소리 바꾸기 (어른용)</summary>
+    <label class="note" for="voiceSel">영어 목소리</label>
+    <select id="voiceSel" class="voice-sel"></select>
+    <div class="rate-row">${RATES.map(([t, r]) => `<button class="rate" data-r="${r}">${t}</button>`).join("")}</div>
+    <button class="listen" id="voiceTest">🔊 들어 보기</button>
+    <p class="note" id="voiceTip"></p></details>`;
+}
+function bindVoiceSet() {
+  const sel = $("voiceSel"); if (!sel) return;
+  const fill = () => {
+    if (!$("voiceSel")) return;
+    const vs = enVoices().slice().sort((a, b) => voiceScore(b) - voiceScore(a)), cur = pickVoice();
+    sel.innerHTML = vs.length ? vs.map(v => `<option value="${v.voiceURI.replace(/"/g, "&quot;")}"${cur && v.voiceURI === cur.voiceURI ? " selected" : ""}>${v.name} (${v.lang})</option>`).join("") : `<option>기본 목소리</option>`;
+    $("voiceTip").textContent = vs.length <= 1 ? "목소리가 하나뿐이라면 휴대폰 설정 → 글자 읽어주기(TTS)에서 영어 목소리를 내려받아 바꿀 수 있어요." : "";
+    const r = voicePref.rate || 1;
+    document.querySelectorAll(".rate").forEach(b => b.classList.toggle("on", Number(b.dataset.r) === r));
+  };
+  fill();
+  try { speechSynthesis.addEventListener("voiceschanged", fill); } catch (e) {}
+  sel.addEventListener("change", () => { voicePref.uri = sel.value; savePref(); speak(TEST_EN); });
+  document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speak(TEST_EN); }));
+  $("voiceTest").addEventListener("click", () => speak(TEST_EN));
+}function speak(text) {
   if (!CAN_SPEAK) return;
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US"; u.rate = document.getElementById("sent") ? 0.72 : 0.8; // 듣고 고르기는 조금 더 천천히
-    const v = speechSynthesis.getVoices().find(v => /^en(-|_)US/i.test(v.lang)) || speechSynthesis.getVoices().find(v => /^en/i.test(v.lang));
-    if (v) u.voice = v;
+    const base = document.getElementById("sent") ? 0.72 : 0.8; // 듣고 고르기는 조금 더 천천히
+    u.lang = "en-US"; u.rate = base * (voicePref.rate || 1);
+    const v = pickVoice();
+    if (v) { u.voice = v; u.lang = v.lang; }
     speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -310,7 +364,17 @@ const TROPHY = `<svg class="trophy" viewBox="0 0 200 200" xmlns="http://www.w3.o
   <path d="M100 56 l6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2z" fill="var(--face)"/>
 </svg>`;
 
-function todayText() {
+// 오늘 한 공부를 첫 화면(오늘의 공부)에 알려 주는 기록. 날짜가 바뀌면 새로 시작한다
+function logToday(subj, label) {
+  try {
+    const k = "study-today-v1", n = new Date(), day = n.getFullYear() + "-" + (n.getMonth() + 1) + "-" + n.getDate();
+    let s = JSON.parse(localStorage.getItem(k)) || {};
+    if (s.date !== day || !s.done) s = {date: day, done: {}};
+    const a = s.done[subj] || (s.done[subj] = []);
+    if (!a.includes(label)) a.push(label);
+    localStorage.setItem(k, JSON.stringify(s));
+  } catch (e) {}
+}function todayText() {
   const d = new Date(), w = "일월화수목금토"[d.getDay()];
   return `<span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
 }
@@ -329,11 +393,12 @@ function renderHome() {
     <section class="card hero">
       <div class="art">${MASCOT("비행기를 타고 지호를 반기는 시나모롤", "bob")}</div>
       <h2><span class="nw">오늘은</span> <span class="nw">영어 시간</span></h2>
-      <p class="date">${todayText()}</p>
       <p class="lead">우리 영어 문장 같이 읽고 들어 보자~</p>
     </section>
     <section class="days" aria-label="날짜별 문제">${cards}</section>
-    ${allDone ? `<div class="btns"><button class="btn soft" id="party">축하 다시 보기</button></div>` : ""}`;
+    ${allDone ? `<div class="btns"><button class="btn soft" id="party">축하 다시 보기</button></div>` : ""}
+    ${voiceSetHTML()}`;
+  bindVoiceSet();
   main.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => startDay(Number(b.dataset.day))));
   if (allDone) $("party").addEventListener("click", renderCelebrate);
 }
@@ -439,7 +504,7 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save();
+  const d = state.days[cur]; d.done = true; save(); logToday("eng", "Day " + (cur + 1));
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const score = DAYS[cur].filter(n => d.res[n] === true).length;
   main.innerHTML = `<section class="card center">
