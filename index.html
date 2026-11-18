@@ -94,8 +94,13 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
 .today.all .today-h { cursor: pointer; }
 .party { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
 .party svg { position: absolute; filter: drop-shadow(0 2px 3px rgba(196, 83, 122, .3)); }
+.cheer { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 2; width: max-content; max-width: 92vw; text-align: center; font-family: var(--display); line-height: 1.15; }
+.cheer b { display: block; font-weight: 400; font-size: 60px; color: #E7799D; -webkit-text-stroke: 2px #FFFFFF; paint-order: stroke fill; text-shadow: 0 4px 0 #FFFFFF, 0 6px 16px rgba(196, 83, 122, .45); white-space: nowrap; }
+.cheer span { display: inline-block; margin-top: 10px; font-size: 26px; color: #8A5BC9; background: rgba(255, 255, 255, .92); border: 3px solid #E9DDFB; border-radius: 99px; padding: 6px 20px; }
 
 @media (max-width: 560px), (orientation: portrait) {
+  .cheer b { font-size: clamp(38px, 12vw, 96px); }
+  .cheer span { font-size: clamp(20px, 5.6vw, 44px); padding: 1.5vw 5vw; }
   body { font-size: clamp(20px, 5.2vw, 42px); padding-top: calc(3vw + env(safe-area-inset-top, 0px)); background-size: 8vw 8vw, 8vw 8vw; background-position: 0 0, 4vw 4vw; }
   .wrap { max-width: none; gap: 4vw; }
   .hero { border-radius: 7vw; padding: 5vw 4.5vw; gap: 2.5vw; }
@@ -320,7 +325,21 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
         const COLORS = ["#F48BAE", "#FFB3C9", "#C7B6F2", "#FFE08A", "#8FD6C4", "#9FD0F5"];
         const HEART_P = "M20 35 C8 26 3 19 3 12.5 C3 7.5 7 4 11.5 4 C15 4 18 6 20 9 C22 6 25 4 28.5 4 C33 4 37 7.5 37 12.5 C37 19 32 26 20 35z";
         const STAR_P = "M20 2 L25 14 L38 15 L28 24 L31 37 L20 30 L9 37 L12 24 L2 15 L15 14z";
-        const W = innerWidth, H = innerHeight, bursts = reduce ? 1 : 4, per = reduce ? 14 : 26;
+        // 칭찬 멘트 (폭죽과 함께 화면 가운데)
+        const NAME = "지호";
+        const CHEERS = [[`${NAME} 최고!`, "오늘 공부를 다 끝냈어!"], [`와, ${NAME} 대단해!`, `${SUBJ.length}과목을 다 했어!`], [`${NAME}야, 멋져!`, "오늘도 정말 잘했어!"], [`${NAME} 짱!`, "끝까지 해냈구나!"]];
+        const [c1, c2] = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+        const cheer = document.createElement("div"); cheer.className = "cheer"; cheer.setAttribute("role", "status");
+        cheer.innerHTML = `<b>${c1}</b><span>${c2}</span>`;
+        layer.appendChild(cheer);
+        cheer.animate(reduce ? [{opacity: 0}, {opacity: 1, offset: 0.1}, {opacity: 1, offset: 0.85}, {opacity: 0}] : [
+          {transform: "translate(-50%, -50%) scale(0.3)", opacity: 0},
+          {transform: "translate(-50%, -50%) scale(1.15)", opacity: 1, offset: 0.12},
+          {transform: "translate(-50%, -50%) scale(1)", opacity: 1, offset: 0.2},
+          {transform: "translate(-50%, -50%) scale(1.04)", opacity: 1, offset: 0.55},
+          {transform: "translate(-50%, -50%) scale(1)", opacity: 1, offset: 0.85},
+          {transform: "translate(-50%, -60%) scale(0.95)", opacity: 0}
+        ], {duration: 3800, easing: "ease-out", fill: "both"});        const W = innerWidth, H = innerHeight, bursts = reduce ? 1 : 4, per = reduce ? 14 : 26;
         for (let b = 0; b < bursts; b++) {
           const ox = W * (0.2 + 0.6 * ((b * 0.37 + 0.5) % 1)), oy = H * (0.25 + 0.2 * (b % 2));
           for (let i = 0; i < per; i++) {
@@ -339,7 +358,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
             ], {duration: 1700 + Math.random() * 900, delay: b * 380, easing: "cubic-bezier(.15,.75,.35,1)", fill: "both"});
           }
         }
-        setTimeout(() => layer.remove(), bursts * 380 + 2800);
+        setTimeout(() => layer.remove(), Math.max(bursts * 380 + 2800, 4000));
       };
       document.querySelector(".today-h").addEventListener("click", party);
       try {
