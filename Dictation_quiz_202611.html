@@ -148,6 +148,12 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
 .dict-in:focus { outline: 3px solid var(--pink); outline-offset: 2px; }
 .adult summary { font-size: 16px; }
 .adult p { font-family: var(--display); font-size: 24px; margin: 8px 0 0; }
+.voiceset { display: flex; flex-direction: column; gap: 8px; }
+.voiceset[open] { display: flex; }
+.voice-sel { width: 100%; font-size: 18px; padding: 8px 10px; border: 2px solid var(--line); border-radius: 12px; background: #FFFFFF; color: var(--ink); margin: 4px 0 8px; }
+.rate-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.rate { font-family: var(--display); font-size: 18px; border: 2px solid var(--line); border-radius: 99px; padding: 6px 16px; background: #FFFFFF; color: var(--ink); cursor: pointer; }
+.rate.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .res { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 .res-row { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; text-align: left; background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 10px 12px; }
 .res-row.ok { border-color: var(--good); background: var(--good-soft); }
@@ -220,6 +226,7 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
   .res-row .again { font-size: clamp(14px, 4.4vw, 34px); padding: 1vw 3vw; }
 }
 @media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } .celebrate .trophy, .mascot.bob, .pop { animation: none; } }
+.voiceset .note { font-size: 15px; font-weight: normal; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -329,18 +336,62 @@ const CAN_SPEAK = "speechSynthesis" in window && typeof SpeechSynthesisUtterance
 
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.lv && s.lv.length === LEVELS.length ? s : null; } catch (e) { return null; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+// 목소리: 기기에 있는 한국어 목소리 중 더 자연스러운 것을 먼저 고르고, 어른이 바꿀 수 있게 한다
+const VOICE_KEY = "dictation-voice-v1";
+const RATES = [["천천히", 0.8], ["보통", 0.9], ["조금 빠르게", 1.0]];
+let voicePref = (() => { try { return JSON.parse(localStorage.getItem(VOICE_KEY)) || {}; } catch (e) { return {}; } })();
+const koVoices = () => { try { return speechSynthesis.getVoices().filter(v => /^ko([-_]|$)/i.test(v.lang)); } catch (e) { return []; } };
+const voiceScore = v => {
+  const n = (v.name + " " + v.voiceURI).toLowerCase(); let s = 0;
+  if (/natural|neural|online|premium|enhanced|고품질|향상/.test(n)) s += 6;
+  if (/network/.test(n)) s += 4;
+  if (/google|samsung|yuna|siri|sunhi|injoon|hyunsu|seoyeon/.test(n)) s += 3;
+  if (/compact|espeak/.test(n)) s -= 5;
+  if (v.localService === false) s += 1;
+  return s;
+};
+function pickVoice() {
+  const vs = koVoices();
+  if (!vs.length) return null;
+  return vs.find(v => v.voiceURI === voicePref.uri) || vs.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+}
 function speak(text) {
   if (!CAN_SPEAK) return;
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[,.?!]/g, m => m === "," ? ", " : m));
-    u.lang = "ko-KR"; u.rate = 0.75;
-    const v = speechSynthesis.getVoices().find(v => /^ko(-|_)?/i.test(v.lang));
-    if (v) u.voice = v;
+    const u = new SpeechSynthesisUtterance(text.replace(/,\s*/g, ", "));
+    u.lang = "ko-KR"; u.rate = voicePref.rate || 0.9; u.pitch = 1;
+    const v = pickVoice();
+    if (v) { u.voice = v; u.lang = v.lang; }
     speechSynthesis.speak(u);
   } catch (e) {}
 }
-if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch (e) {} }
+function savePref() { try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePref)); } catch (e) {} }
+function voiceSetHTML() {
+  if (!CAN_SPEAK) return "";
+  return `<details class="adult voiceset"><summary>목소리 바꾸기 (어른용)</summary>
+    <label class="note" for="voiceSel">한국어 목소리</label>
+    <select id="voiceSel" class="voice-sel"></select>
+    <div class="rate-row">${RATES.map(([t, r]) => `<button class="rate" data-r="${r}">${t}</button>`).join("")}</div>
+    <button class="speak soft" id="voiceTest">🔊 들어 보기</button>
+    <p class="note" id="voiceTip"></p></details>`;
+}
+function bindVoiceSet() {
+  const sel = $("voiceSel"); if (!sel) return;
+  const fill = () => {
+    const vs = koVoices(), cur = pickVoice();
+    sel.innerHTML = vs.length ? vs.map(v => `<option value="${v.voiceURI.replace(/"/g, "&quot;")}"${cur && v.voiceURI === cur.voiceURI ? " selected" : ""}>${v.name}</option>`).join("") : `<option>기본 목소리</option>`;
+    $("voiceTip").textContent = vs.length <= 1 ? "목소리가 하나뿐이라면 휴대폰 설정 → 글자 읽어주기(TTS)에서 한국어 목소리를 바꿀 수 있어요." : "";
+    const r = voicePref.rate || 0.9;
+    document.querySelectorAll(".rate").forEach(b => b.classList.toggle("on", Number(b.dataset.r) === r));
+  };
+  fill();
+  try { speechSynthesis.addEventListener("voiceschanged", fill); } catch (e) {}
+  sel.addEventListener("change", () => { voicePref.uri = sel.value; savePref(); speak("안녕, 오늘도 같이 받아쓰기 해 보자."); });
+  document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speak("안녕, 오늘도 같이 받아쓰기 해 보자."); }));
+  $("voiceTest").addEventListener("click", () => speak("안녕, 오늘도 같이 받아쓰기 해 보자."));
+}
+if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.addEventListener("voiceschanged", () => {}); } catch (e) {} }
 // 받아쓰기 채점: 문장부호(. , ? !)와 앞뒤 공백은 보지 않고, 글자와 띄어쓰기를 본다
 const norm = s => s.replace(/[.,?!~'"“”‘’]/g, "").replace(/\s+/g, " ").trim();
 const markBlank = s => s.replace(/\{(.+?)\}/, `<span class="blank" role="img" aria-label="빈칸">　　</span>`);
@@ -484,7 +535,7 @@ function renderDict() {
     <section class="card"><div class="sec">${L.g}급 · ② 받아쓰기</div>
       <p class="q"><span class="qnum">${i + 1}번</span>잘 듣고 문장을 써 보세요. 공책에 써도 좋아요.</p>
       <div class="box">
-        <div class="speak-row">${CAN_SPEAK ? `<button class="speak" id="say">🔊 들려줘</button>` : `<p class="note">이 기기에서는 소리가 나오지 않아요. 어른이 아래 문장을 읽어 주세요.</p>`}</div>
+        <div class="speak-row">${CAN_SPEAK ? `<button class="speak" id="say">🔊 들려줘</button>` : `<p class="note">이 기기에서는 소리가 나오지 않아요.</p>`}</div>
       </div>
       <label class="note" for="ans">${i + 1}번 답 쓰는 곳</label>
       <input class="dict-in" id="ans" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="${last ? "done" : "next"}" value="${(d.ans[i] || "").replace(/"/g, "&quot;")}" placeholder="여기에 써요">
@@ -492,7 +543,7 @@ function renderDict() {
         ${i > 0 ? `<button class="btn soft" id="prev">← 앞 문장</button>` : ""}
         <button class="btn" id="next">${last ? "다 썼어요! 정답 보기" : "다음 문장 →"}</button>
       </div>
-      <details class="adult"><summary>어른이 읽어 줄 때 (문장 보기)</summary><p>${q.full}</p></details>
+      ${voiceSetHTML()}
     </section>`;
   const inp = $("ans");
   const keep = () => { state.lv[cur].dict.ans[i] = inp.value; save(); };
@@ -500,6 +551,7 @@ function renderDict() {
   inp.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); $("next").click(); } });
   $("back").addEventListener("click", () => { keep(); renderLevel(cur); });
   if (CAN_SPEAK) $("say").addEventListener("click", () => { speak(q.full); $("say").textContent = "🔊 한 번 더"; });
+  bindVoiceSet();
   if ($("prev")) $("prev").addEventListener("click", () => { keep(); state.lv[cur].dict.i = i - 1; save(); renderDict(); });
   $("next").addEventListener("click", () => {
     keep();
