@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF0F5">
+<title>지호의 공부방</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: 핑크 아기 공룡 인사 카드 → 과목 카드 2개(수학 · 영어). 파스텔 핑크 바탕 + 민트·라벤더·하늘 포인트 */
+:root {
+  --bg: #FFF0F5; --blush: #FFDDE8; --card: #FFFFFF; --ink: #4A3448; --muted: #8A6E82; --line: #F6D3DF;
+  --pink: #E7799D; --pink-soft: #FFE6EE; --pink-line: #F4B4C9;
+  --mint: #8FD6C4; --lav: #C7B6F2; --lav-soft: #F1ECFD; --sky: #6FB4E6; --sky-soft: #E6F3FC; --butter: #FFE08A;
+  --good: #2B8A6B;
+  --display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; color: var(--ink); font-family: var(--body); font-size: 20px; line-height: 1.6;
+  background-color: var(--bg);
+  /* 작은 물방울 무늬 */
+  background-image: radial-gradient(circle, #FFE3EC 2.5px, transparent 3px), radial-gradient(circle, #F3EDFF 2.5px, transparent 3px);
+  background-size: 34px 34px, 34px 34px; background-position: 0 0, 17px 17px;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+a { -webkit-tap-highlight-color: transparent; }
+.wrap { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.nw { white-space: nowrap; }
+.hero {
+  background: linear-gradient(180deg, var(--blush) 0%, var(--card) 72%); border: 3px solid var(--pink-line); border-radius: 28px;
+  padding: 22px 20px 22px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.dino { width: 260px; max-width: 100%; height: auto; }
+.dino .bob { animation: bob 2.6s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.dino .twinkle { animation: twinkle 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.dino .twinkle.t2 { animation-delay: .6s; } .dino .twinkle.t3 { animation-delay: 1.2s; }
+@keyframes twinkle { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.6); opacity: .5; } }
+h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(--pink); margin: 0; line-height: 1.3; text-wrap: balance; }
+.date { font-family: var(--display); font-size: 22px; margin: 0; }
+.lead { margin: 0; font-size: 20px; color: var(--muted); }
+.subjects { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.subject {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; text-decoration: none; color: var(--ink);
+  background: var(--card); border: 4px solid var(--line); border-radius: 26px; padding: 20px 12px 18px;
+  transition: transform .15s;
+}
+.subject:active { transform: scale(.97); }
+.subject:focus-visible { outline: 4px solid var(--lav); outline-offset: 3px; }
+.subject.math { border-color: #A9D4F2; background: linear-gradient(180deg, var(--sky-soft), var(--card) 60%); }
+.subject.eng { border-color: var(--pink-line); background: linear-gradient(180deg, var(--pink-soft), var(--card) 60%); }
+.subject svg { width: 116px; height: auto; max-width: 100%; }
+.tag { font-family: var(--display); font-size: 18px; border-radius: 99px; padding: 2px 14px; }
+.math .tag { background: var(--sky-soft); color: #2F7DB8; }
+.eng .tag { background: var(--pink-soft); color: #C2537A; }
+.name { font-family: var(--display); font-size: 30px; line-height: 1.2; }
+.progress { font-size: 17px; color: var(--muted); }
+.progress b { color: var(--good); font-weight: 400; font-family: var(--display); }
+.go { font-family: var(--display); font-size: 22px; color: #FFFFFF; border-radius: 99px; padding: 6px 24px; margin-top: 4px; }
+.math .go { background: var(--sky); }
+.eng .go { background: var(--pink); }
+.note { text-align: center; color: var(--muted); font-size: 15px; margin: 0; font-family: var(--display); }
+/* 과목 제목: 수학(하늘) · 영어(분홍) */
+.group { font-family: var(--display); font-weight: 400; font-size: 26px; margin: 6px 0 -4px; display: flex; align-items: center; gap: 10px; }
+.group::after { content: ""; flex: 1; height: 3px; border-radius: 3px; }
+.math-h { color: #2F7DB8; } .math-h::after { background: #A9D4F2; }
+.eng-h { color: #C2537A; } .eng-h::after { background: var(--pink-line); }
+.subject.wide { grid-column: 1 / -1; }
+.kor-h { color: #6A55B8; } .kor-h::after { background: #D9CEF7; }
+.subject.kor { border-color: #D9CEF7; background: linear-gradient(180deg, var(--lav-soft), var(--card) 60%); }
+.kor .go { background: #A895DE; }
+.name, .go { white-space: nowrap; }
+
+/* 휴대폰 세로 화면: 화면 폭에 비례 */
+@media (max-width: 560px), (orientation: portrait) {
+  body { font-size: clamp(20px, 5.2vw, 42px); padding-top: calc(3vw + env(safe-area-inset-top, 0px)); background-size: 8vw 8vw, 8vw 8vw; background-position: 0 0, 4vw 4vw; }
+  .wrap { max-width: none; gap: 4vw; }
+  .hero { border-radius: 7vw; padding: 5vw 4.5vw; gap: 2.5vw; }
+  .dino { width: 68vw; }
+  h1 { font-size: clamp(30px, 9vw, 72px); }
+  .date { font-size: clamp(20px, 5.8vw, 46px); }
+  .lead { font-size: clamp(19px, 5.6vw, 44px); }
+  .subjects { gap: 3.5vw; }
+  .subject { border-radius: 7vw; padding: 5vw 3vw 4.5vw; gap: 2vw; border-width: 3px; }
+  .subject svg { width: 30vw; }
+  .tag { font-size: clamp(15px, 4.4vw, 34px); padding: .4vw 3.4vw; }
+  .name { font-size: clamp(24px, 7.4vw, 58px); }
+  .progress { font-size: clamp(14px, 4.2vw, 32px); }
+  .go { font-size: clamp(18px, 5.6vw, 44px); padding: 1.4vw 6vw; }
+  .note { font-size: clamp(14px, 4.2vw, 32px); }
+  .group { font-size: clamp(22px, 7vw, 56px); gap: 3vw; margin: 1.5vw 0 -1vw; }
+  .subject.wide svg { width: 30vw; }
+}
+@media (prefers-reduced-motion: reduce) { .subject { transition: none; } .dino .bob, .dino .twinkle { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <!-- 구름 위에 선 아기 유니콘, 옆모습 (새로 그린 캐릭터) -->
+    <svg class="dino" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="구름 위에 서 있는 옆모습의 아기 유니콘 그림">
+      <path class="twinkle" d="M28 44 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#C7B6F2"/>
+      <path class="twinkle t2" d="M120 30 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" fill="#FFE08A"/>
+      <path class="twinkle t3" d="M218 132 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#8FD6C4"/>
+      <circle cx="60" cy="92" r="4" fill="#FFE08A"/><circle cx="222" cy="64" r="4" fill="#F4B4C9"/>
+      <path d="M30 212 a20 20 0 0 1 16 -28 a28 28 0 0 1 50 -8 a30 30 0 0 1 54 2 a24 24 0 0 1 40 34z" fill="#FFFFFF" stroke="#F4B4C9" stroke-width="3" stroke-linejoin="round"/>
+      <g class="bob">
+        <!-- 꼬리 -->
+        <circle cx="58" cy="132" r="11" fill="#F7A8C4"/><circle cx="46" cy="146" r="10" fill="#C7B6F2"/><circle cx="50" cy="162" r="8" fill="#8FD6C4"/>
+        <!-- 뒤쪽 다리 (조금 진하게) -->
+        <g fill="#FBEFF4" stroke="#E79AB4" stroke-width="3">
+          <rect x="82" y="156" width="15" height="34" rx="7.5"/><rect x="136" y="156" width="15" height="34" rx="7.5"/>
+        </g>
+        <rect x="82" y="182" width="15" height="9" rx="4.5" fill="#F7A8C4"/><rect x="136" y="182" width="15" height="9" rx="4.5" fill="#F7A8C4"/>
+        <!-- 몸 -->
+        <ellipse cx="112" cy="146" rx="50" ry="28" fill="#FFFAFC" stroke="#E79AB4" stroke-width="3"/>
+        <!-- 앞쪽 다리 -->
+        <g fill="#FFFAFC" stroke="#E79AB4" stroke-width="3">
+          <rect x="70" y="156" width="15" height="36" rx="7.5"/><rect x="124" y="156" width="15" height="36" rx="7.5"/>
+        </g>
+        <rect x="70" y="184" width="15" height="9" rx="4.5" fill="#F7A8C4"/><rect x="124" y="184" width="15" height="9" rx="4.5" fill="#F7A8C4"/>
+        <!-- 목 -->
+        <path d="M134 140 q2 -34 18 -56 l26 12 q-8 26 -14 50z" fill="#FFFAFC" stroke="#E79AB4" stroke-width="3" stroke-linejoin="round"/>
+        <!-- 머리 (오른쪽을 봄) -->
+        <path d="M146 86 q0 -32 34 -32 q26 0 32 26 q10 12 6 24 q-4 12 -20 12 q-16 0 -28 -6 q-24 -4 -24 -24z" fill="#FFFAFC" stroke="#E79AB4" stroke-width="3" stroke-linejoin="round"/>
+        <!-- 귀 -->
+        <path d="M160 64 l-6 -24 20 16z" fill="#FFFAFC" stroke="#E79AB4" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M161 59 l-3 -12 10 8z" fill="#F7A8C4"/>
+        <!-- 뿔 -->
+        <path d="M176 58 l22 -36 -6 40z" fill="#FFE08A" stroke="#E2B94A" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M180 50 l12 2 M185 41 l9 1 M190 32 l5 1" stroke="#C7B6F2" stroke-width="3" stroke-linecap="round"/>
+        <!-- 갈기 -->
+        <circle cx="152" cy="66" r="11" fill="#F7A8C4"/><circle cx="144" cy="84" r="10" fill="#C7B6F2"/>
+        <circle cx="140" cy="102" r="9" fill="#8FD6C4"/><circle cx="138" cy="119" r="8" fill="#F7A8C4"/><circle cx="168" cy="58" r="8" fill="#C7B6F2"/>
+        <!-- 눈 -->
+        <ellipse cx="182" cy="84" rx="7" ry="9" fill="#4A3448"/>
+        <circle cx="185" cy="80" r="2.8" fill="#FFFFFF"/><circle cx="180" cy="88" r="1.3" fill="#FFFFFF"/>
+        <path d="M176 76 l-5 -4 M180 74 l-3 -5" stroke="#4A3448" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- 볼, 콧구멍, 입 -->
+        <ellipse cx="192" cy="102" rx="8" ry="5" fill="#F48BAE" opacity=".5"/>
+        <circle cx="210" cy="98" r="1.8" fill="#C46A8C"/>
+        <path d="M200 110 q6 4 11 -1" fill="none" stroke="#4A3448" stroke-width="2.6" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <h1><span class="nw">안녕, 지호야!</span> <span class="nw">반가워!</span></h1>
+    <p class="date" id="today"></p>
+    <p class="lead">오늘은 어떤 공부를 해 볼까?</p>
+  </section>
+
+  <h2 class="group kor-h">국어</h2>
+  <nav class="subjects" aria-label="국어 퀴즈 고르기">
+    <a class="subject kor" href="Hangul_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="10" y="16" width="100" height="72" rx="16" fill="#FFFFFF" stroke="#A895DE" stroke-width="4"/>
+        <text x="60" y="52" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="34" fill="#4A3448">읽<tspan fill="#E7799D">고</tspan></text>
+        <path d="M38 70 q6 -5 12 0 t12 0 t12 0" fill="none" stroke="#E7799D" stroke-width="3" stroke-linecap="round"/>
+        <g transform="translate(86 92) rotate(35)"><rect x="-5" y="-24" width="10" height="28" rx="2" fill="#FFE08A" stroke="#E2B94A" stroke-width="2"/><path d="M-5 4 l5 10 5 -10z" fill="#FFE9C9" stroke="#E2B94A" stroke-width="2" stroke-linejoin="round"/></g>
+        <path d="M18 98 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
+      </svg>
+      <span class="name">받침 맞춤법</span>
+      <span class="progress" id="p-kor">5일 · 50문제</span>
+      <span class="go">시작하기</span>
+    </a>
+    <a class="subject kor" href="Dictation_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="14" y="10" width="78" height="96" rx="12" fill="#FFFFFF" stroke="#A895DE" stroke-width="4"/>
+        <g stroke="#D9CEF7" stroke-width="2"><path d="M14 38 h78 M14 62 h78 M14 86 h78 M40 10 v96 M66 10 v96"/></g>
+        <text x="27" y="26" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="18" fill="#4A3448">받</text>
+        <text x="53" y="26" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="18" fill="#4A3448">아</text>
+        <text x="79" y="26" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="18" fill="#E7799D">쓰</text>
+        <path d="M86 58 q14 -10 24 4 q4 10 -6 16 l-8 -4" fill="#FFE6EE" stroke="#E7799D" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M94 64 q4 2 4 6 M100 60 q6 4 5 10" fill="none" stroke="#E7799D" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M104 96 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
+      </svg>
+      <span class="name">받아쓰기</span>
+      <span class="progress" id="p-dict">9급 ~ 14급</span>
+      <span class="go">시작하기</span>
+    </a>
+  </nav>
+
+  <h2 class="group math-h">수학</h2>
+  <nav class="subjects" aria-label="수학 퀴즈 고르기">
+    <a class="subject math" href="Math_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="60" cy="60" r="54" fill="#FFFFFF" stroke="#6FB4E6" stroke-width="5"/>
+        <g font-family="Jua, sans-serif" font-size="14" fill="#4A3448" text-anchor="middle" dominant-baseline="central">
+          <text x="60" y="18">12</text><text x="102" y="60">3</text><text x="60" y="102">6</text><text x="18" y="60">9</text>
+        </g>
+        <line x1="60" y1="60" x2="60" y2="30" stroke="#2F7DB8" stroke-width="4" stroke-linecap="round"/>
+        <line x1="60" y1="60" x2="80" y2="68" stroke="#E7799D" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="60" cy="60" r="5" fill="#4A3448"/>
+      </svg>
+      <span class="name">시계 보기</span>
+      <span class="progress" id="p-clock">5일 · 50문제</span>
+      <span class="go">시작하기</span>
+    </a>
+    <a class="subject math" href="Gugudan_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="8" y="8" width="104" height="104" rx="24" fill="#FFFFFF" stroke="#6FB4E6" stroke-width="5"/>
+        <g fill="#C7B6F2"><circle cx="30" cy="30" r="6"/><circle cx="48" cy="30" r="6"/><circle cx="30" cy="48" r="6"/><circle cx="48" cy="48" r="6"/></g>
+        <text x="80" y="44" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="34" fill="#E7799D">×</text>
+        <text x="60" y="88" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="28" fill="#2F7DB8">2×2=4</text>
+      </svg>
+      <span class="name">구구단</span>
+      <span class="progress" id="p-gugu">5일 · 50문제</span>
+      <span class="go">시작하기</span>
+    </a>
+  </nav>
+
+  <h2 class="group eng-h">영어</h2>
+  <nav class="subjects" aria-label="영어 퀴즈 고르기">
+    <a class="subject eng" href="ENG_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M14 30 q23 -10 46 4 v66 q-23 -14 -46 -4z" fill="#FFE6EE" stroke="#E7799D" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M106 30 q-23 -10 -46 4 v66 q23 -14 46 -4z" fill="#FFFFFF" stroke="#E7799D" stroke-width="4" stroke-linejoin="round"/>
+        <text x="36" y="66" text-anchor="middle" font-family="Jua, sans-serif" font-size="20" fill="#C2537A">AB</text>
+        <text x="84" y="66" text-anchor="middle" font-family="Jua, sans-serif" font-size="20" fill="#2F7DB8">C</text>
+        <path d="M92 14 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
+      </svg>
+      <span class="name">읽기/듣기</span>
+      <span class="progress" id="p-eng">5일 · 50문제</span>
+      <span class="go">시작하기</span>
+    </a>
+    <a class="subject eng" href="Word_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="14" y="22" width="68" height="50" rx="12" fill="#FFFFFF" stroke="#E7799D" stroke-width="4" transform="rotate(-8 48 47)"/>
+        <text x="48" y="50" text-anchor="middle" dominant-baseline="central" font-family="Nunito, Arial, sans-serif" font-weight="800" font-size="22" fill="#C2537A" transform="rotate(-8 48 47)">cat</text>
+        <rect x="40" y="52" width="68" height="50" rx="12" fill="#FFE6EE" stroke="#E7799D" stroke-width="4" transform="rotate(6 74 77)"/>
+        <text x="74" y="78" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="22" fill="#2F7DB8" transform="rotate(6 74 77)">고양이</text>
+        <path d="M100 12 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
+      </svg>
+      <span class="name">단어</span>
+      <span class="progress" id="p-word">5일 + 최종 평가</span>
+      <span class="go">시작하기</span>
+    </a>
+  </nav>
+  <p class="note">하루에 Day 하나씩, 5일이면 끝!</p>
+</div>
+
+<script>
+(function () {
+  const d = new Date(), w = "일월화수목금토"[d.getDay()];
+  document.getElementById("today").innerHTML =
+    `오늘은 <span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
+
+  // 같은 주소(GitHub Pages)에 올리면 각 퀴즈의 진행 기록을 읽어 보여 준다
+  function show(key, id) {
+    try {
+      const s = JSON.parse(localStorage.getItem(key));
+      if (!s || !s.days) return;
+      const done = s.days.filter(x => x.done).length;
+      const el = document.getElementById(id);
+      if (done === 5) el.innerHTML = "<b>5일 모두 끝!</b> 🎉";
+      else if (done > 0) el.innerHTML = `<b>Day ${done}</b>까지 했어요`;
+    } catch (e) {}
+  }
+  show("clock-quiz-days-v1", "p-clock");
+  show("gugudan-quiz-days-v1", "p-gugu");
+  show("hangul-quiz-days-v1", "p-kor");
+  show("english-quiz-days-v1", "p-eng");
+  // 받아쓰기: 9~14급, 급수마다 빈칸 채우기 + 받아쓰기
+  try {
+    const s = JSON.parse(localStorage.getItem("dictation-quiz-9-14-v1"));
+    if (s && s.lv) {
+      const el = document.getElementById("p-dict"), done = s.lv.filter(x => x.mc.done && x.dict.done).length;
+      if (done === s.lv.length) el.innerHTML = "<b>모든 급수 끝!</b> 🎉";
+      else if (done > 0) el.innerHTML = `<b>${done}개 급수</b> 끝냈어요`;
+    }
+  } catch (e) {}
+  // 단어 퀴즈: Day 1~5 + 최종 평가(6번째)
+  try {
+    const s = JSON.parse(localStorage.getItem("word-quiz-week12-v1"));
+    if (s && s.days) {
+      const el = document.getElementById("p-word"), five = s.days.slice(0, 5).filter(x => x.done).length;
+      if (s.days[5] && s.days[5].done) el.innerHTML = "<b>최종 평가 끝!</b> 🎉";
+      else if (five === 5) el.innerHTML = "<b>최종 평가</b>만 남았어요";
+      else if (five > 0) el.innerHTML = `<b>Day ${five}</b>까지 했어요`;
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
