@@ -162,6 +162,8 @@ td.en { font-family: var(--en); font-weight: 700; }
 @keyframes rise { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* 휴대폰(세로 화면 또는 좁은 화면): 화면 폭에 비례해 크기를 정한다. 반드시 스타일 맨 끝에 둔다. */
+/* 칸이 2개(오늘의 단어 · 최종 평가)라 반씩 넓게 */
+.days .day { width: 47%; }
 @media (max-width: 560px), (orientation: portrait) {
   body { font-size: clamp(20px, 5.2vw, 42px); padding-top: calc(3vw + env(safe-area-inset-top, 0px)); }
   .wrap { max-width: none; gap: 3.5vw; }
@@ -250,35 +252,29 @@ const MODE = {
 const PERMS = [[0,1,2],[1,0,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0]];
 // 보기: 같은 묶음 안의 다른 단어 2개 (뜻이 비슷한 tumble·roll은 서로 보기로 나오지 않게 배치)
 function others(w) { const g = w < 10 ? 0 : 10, k = w - g; return [g + (k + 3) % 10, g + (k + 6) % 10]; }
-function choiceQ(w, type, seed) {
-  const ids = [w, ...others(w)], order = PERMS[seed % 6];
-  const opts = order.map(j => ids[j]);
-  return {type, w, opts, ans: opts.indexOf(w)};
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+// 오늘의 단어: 20단어를 한 번씩, 순서는 무작위. 영어 → 뜻 10문제, 뜻 → 영어 10문제가 섞여 나온다
+function makePractice() {
+  const ws = shuffle([...Array(WORDS.length).keys()]);
+  const dirs = shuffle(ws.map((_, i) => i % 2 ? "ko" : "en"));
+  return ws.map((w, p) => { const opts = shuffle([w, ...others(w)]); return {type: dirs[p], w, opts, ans: opts.indexOf(w)}; });
 }
-const dirAt = pos => pos % 2 === 0 ? "en" : "ko";
-const DAY2_ORDER = [5, 0, 7, 2, 9, 4, 1, 6, 3, 8];          // 홀수·짝수 단어가 번갈아 → 방향도 번갈아
-const REVIEW = [2, 13, 6, 17, 9, 10, 5, 14, 1, 18];          // Day 5 복습: 물건 5개 + 움직임 5개
 const FINAL = [4, 15, 0, 12, 8, 18, 2, 10, 6, 16, 9, 13, 1, 19, 5, 11, 3, 17, 7, 14];
-const DAYS = [
-  [...Array(10).keys()].map((w, p) => choiceQ(w, dirAt(p), p + 1)),
-  DAY2_ORDER.map((w, p) => choiceQ(w, w % 2 === 0 ? "ko" : "en", p + 11)),
-  [...Array(10).keys()].map((k, p) => choiceQ(10 + k, dirAt(p), p + 21)),
-  DAY2_ORDER.map((k, p) => choiceQ(10 + k, k % 2 === 0 ? "ko" : "en", p + 31)),
-  REVIEW.map((w, p) => choiceQ(w, dirAt(p), p + 41)),
-  FINAL.map(w => ({type: "sp", w}))
-];
-const LABEL = k => k < 5 ? `Day ${k + 1}` : "최종 평가";
-
+const FINAL_Q = FINAL.map(w => ({type: "sp", w}));
+let DAYS = [];
+const syncDays = () => { DAYS = [state.practice, FINAL_Q]; };
+const LABEL = k => k === 0 ? "오늘의 단어" : "최종 평가";
 const CHEERS = [`${NAME}야, 정답이야!`, `와, ${NAME}야 맞았어!`, `딩동댕! ${NAME} 최고!`, `멋져, ${NAME}야!`];
-const KEY = "word-quiz-week12-v1";
-const fresh = () => ({days: DAYS.map(() => ({i: 0, res: {}, done: false})), celebrated: false});
+const KEY = "word-quiz-week12-v2";
+const fresh = () => ({practice: makePractice(), days: [0, 1].map(() => ({i: 0, res: {}, done: false})), celebrated: false});
 let state = load() || fresh();
+syncDays();
 let cur = null, tries = 0;
 const $ = id => document.getElementById(id);
 const main = $("main");
 const CAN_SPEAK = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.days && s.days.length === DAYS.length ? s : null; } catch (e) { return null; } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.practice && s.practice.length === WORDS.length && s.days && s.days.length === 2 ? s : null; } catch (e) { return null; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 function josa(word, withFinal, noFinal) {
   const ch = word.replace(/[^가-힣]/g, "").slice(-1);
@@ -382,9 +378,9 @@ function renderHome() {
   const allDone = firstOpen === -1;
   const cards = state.days.map((d, k) => {
     const total = DAYS[k].length;
-    const sub = d.done ? `다 했어! ${score(k)}/${total}` : d.i > 0 ? `${d.i}/${total} 하는 중` : k < 5 ? `${total}문제` : `듣고 쓰기 ${total}`;
+    const sub = d.done ? `다 했어! ${score(k)}/${total}` : d.i > 0 ? `${d.i}/${total} 하는 중` : k === 0 ? `${total}문제` : `듣고 쓰기 ${total}`;
     const img = "";
-    return `<button class="day ${k === 5 ? "final" : ""} ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="${LABEL(k)}, ${sub}">${img}<span class="d">${LABEL(k)}</span><span class="s">${sub}</span></button>`;
+    return `<button class="day ${k === 1 ? "final" : ""} ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="${LABEL(k)}, ${sub}">${img}<span class="d">${LABEL(k)}</span><span class="s">${sub}</span></button>`;
   }).join("");
   main.innerHTML = `
     <a class="link" href="index.html">← 과목 고르기</a>
@@ -394,7 +390,7 @@ function renderHome() {
       <p class="lead">우리 영어 단어 같이 익혀 보자~</p>
     </section>
     <section class="days" aria-label="날짜별 문제">${cards}</section>
-    <p class="note" style="text-align:center">Day 1~5로 단어를 익히고, 마지막에 최종 평가로 직접 써 봐요!</p>
+    <p class="note" style="text-align:center">오늘의 단어 20문제로 익히고, 최종 평가로 직접 써 봐요! 오늘의 단어는 할 때마다 순서가 바뀌어요.</p>
     ${allDone ? `<div class="btns"><button class="btn soft" id="party">축하 다시 보기</button></div>` : ""}
     ${voiceSetHTML()}`;
   bindVoiceSet();
@@ -404,7 +400,7 @@ function renderHome() {
 
 function startDay(k) {
   cur = k;
-  if (state.days[k].done) state.days[k] = {i: 0, res: {}, done: false};
+  if (state.days[k].done) { state.days[k] = {i: 0, res: {}, done: false}; if (k === 0) { state.practice = makePractice(); syncDays(); } }
   save(); renderQ(); window.scrollTo(0, 0);
 }
 
@@ -536,10 +532,10 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save(); logToday("word", cur === 5 ? "최종 평가" : "Day " + (cur + 1));
+  const d = state.days[cur]; d.done = true; save(); logToday("word", LABEL(cur));
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const total = DAYS[cur].length, s = score(cur);
-  const msg = cur === 5
+  const msg = cur === 1
     ? `${NAME}야, 최종 평가 ${total}문제를 끝까지 다 썼어! 처음에 바로 맞힌 단어가 ${s}개야. 정말 대단해!`
     : `${NAME}야, 오늘 ${total}문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!`;
   main.innerHTML = `<section class="card center">
@@ -564,17 +560,17 @@ function recordTable(dayIdx) {
 
 function renderCelebrate() {
   closePopup();
-  const fin = score(5);
+  const fin = score(1);
   main.innerHTML = `<section class="card center celebrate">
     <div class="art">${TROPHY}${MASCOT("모자 쓰고 스케이트보드를 타고 축하하는 시나모롤")}</div>
     <h2><span class="nw">축하해,</span> <span class="nw">${NAME}야!</span></h2>
-    <p class="q">단어 20개를 5일 동안 익히고, 최종 평가까지 모두 해냈어! 이제 ${NAME}는 단어 박사야.</p>
+    <p class="q">오늘의 단어 20문제를 다 익히고, 최종 평가까지 모두 해냈어! 이제 ${NAME}는 단어 박사야.</p>
     <div class="badges">${DAYS.map((_, k) => `<span>${LABEL(k)} ✓</span>`).join("")}</div>
     <p class="lead">최종 평가에서 처음에 바로 쓴 단어: <b>${fin} / 20</b></p>
-    ${recordTable([0, 1, 2, 3, 4, 5])}
+    ${recordTable([0, 1])}
     <div class="btns"><button class="btn" id="home">처음 화면으로</button><button class="btn soft" id="reset">처음부터 다시 시작</button></div></section>`;
   $("home").addEventListener("click", renderHome);
-  $("reset").addEventListener("click", () => { state = fresh(); save(); renderHome(); });
+  $("reset").addEventListener("click", () => { state = fresh(); syncDays(); save(); renderHome(); });
   confetti();
   window.scrollTo(0, 0);
 }
