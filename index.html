@@ -215,6 +215,17 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
       <span class="progress" id="p-dict">9급 ~ 14급</span>
       <span class="go">시작하기</span>
     </a>
+    <a class="subject kor wide" href="Hanja_quiz_202611.html">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="14" y="14" width="76" height="88" rx="12" fill="#FFFFFF" stroke="#A895DE" stroke-width="4" transform="rotate(-6 52 58)"/>
+        <text x="52" y="60" text-anchor="middle" dominant-baseline="central" font-family="'Noto Serif KR', Batang, serif" font-weight="700" font-size="48" fill="#4A3448" transform="rotate(-6 52 58)">山</text>
+        <g transform="translate(92 78) rotate(30)"><rect x="-6" y="-34" width="12" height="36" rx="5" fill="#FFE08A" stroke="#E2B94A" stroke-width="2"/><path d="M-6 2 q2 14 6 20 q4 -6 6 -20z" fill="#4A3448"/></g>
+        <path d="M100 14 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
+      </svg>
+      <span class="name">한자</span>
+      <span class="progress" id="p-hanja">8급 50자 · 하루 20문제</span>
+      <span class="go">시작하기</span>
+    </a>
   </nav>
 
   <h2 class="group math-h">수학</h2>
@@ -298,6 +309,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
     const SUBJ = [
       ["kor", "맞춤법", "Hangul_quiz_202611.html"],
       ["dict", "받아쓰기", "Dictation_quiz_202611.html"],
+      ["hanja", "한자", "Hanja_quiz_202611.html"],
       ["clock", "시계 보기", "Math_quiz_202611.html"],
       ["gugu", "구구단", "Gugudan_quiz_202611.html"],
       ["eng", "읽기/듣기", "ENG_quiz_202611.html"],
@@ -369,6 +381,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
   })();  show("clock-quiz-days-v1", "p-clock");
   show("gugudan-quiz-days-v1", "p-gugu");
   show("hangul-quiz-days-v1", "p-kor");
+  show("hanja-quiz-8-v2", "p-hanja");
   show("english-quiz-days-v1", "p-eng");
   // 받아쓰기: 9~14급, 급수마다 빈칸 채우기 + 받아쓰기
   try {
