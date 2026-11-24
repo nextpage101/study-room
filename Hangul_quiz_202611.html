@@ -128,6 +128,11 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
 @keyframes rise { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* 휴대폰(세로 화면 또는 좁은 화면): 화면 폭에 비례해 크기를 정한다. 반드시 스타일 맨 끝에 둔다. */
+/* 너무 빨리 누를 때 잠깐 뜨는 알림 */
+.slow { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40; background: #FFF1F5; border: 3px solid #F9CFDC; color: #9E4A69; font-family: var(--display); font-size: clamp(20px, 5.6vw, 40px); padding: 12px 22px; border-radius: 99px; box-shadow: 0 6px 20px rgba(214, 140, 166, .3); opacity: 0; pointer-events: none; white-space: nowrap; }
+.slow.on { animation: slowNote 1.8s ease-out; }
+@keyframes slowNote { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
+
 @media (max-width: 560px), (orientation: portrait) {
   body { font-size: clamp(20px, 5.2vw, 42px); padding-top: calc(3vw + env(safe-area-inset-top, 0px)); }
   .wrap { max-width: none; gap: 3.5vw; }
@@ -290,12 +295,48 @@ function logToday(subj, label) {
 }
 const score = k => DAYS[k].filter(n => state.days[k].res[n] === true).length;
 
+/* ---------- 찍기 방지 ----------
+   ② 문제가 나오고 WAIT_MS 안에 누르면 답을 받지 않고 "천천히" 알림을 띄운다(듣기 문제는 소리가 끝날 즈음부터 잰다).
+   ① 처음에 틀린 문제는 Day 끝에 순서와 보기를 바꿔 다시 낸다. 다시 풀기에서 한 번에 맞혀야 끝난다.
+   ⑤ 보호자 기록에 '빨리 누름'과 '다시 풀기' 횟수를 남긴다. */
+const WAIT_MS = 2500;
+let readyAt = 0;
+const armWait = (extra = 0) => { readyAt = Date.now() + WAIT_MS + extra; };
+function tooFast(bag, id, msg) {
+  if (Date.now() >= readyAt) return false;
+  bag.fast = bag.fast || {}; bag.fast[id] = (bag.fast[id] || 0) + 1; save();
+  let t = document.getElementById("slow");
+  if (!t) { t = document.createElement("div"); t.id = "slow"; t.className = "slow"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg || "🐢 천천히 읽고 골라 볼까?";
+  t.classList.remove("on"); void t.offsetWidth; t.classList.add("on");
+  return true;
+}
+const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const reshuffle = q => { const o = shuf(q.opts.map((_, i) => i)); return {...q, opts: o.map(i => q.opts[i]), ans: o.indexOf(q.ans)}; };
+const retryList = (bag, base) => [...base, ...(bag.extra || [])];
+const missOf = (bag, base) => base.filter(id => bag.res[id] !== true && !(bag.clear || {})[id]);
+const missLeft = (bag, base) => missOf(bag, base).length > 0;
+function addRetry(bag, base) {
+  const miss = missOf(bag, base);
+  if (!miss.length) return 0;
+  bag.extra = [...(bag.extra || []), ...shuf(miss)]; save();
+  return miss.length;
+}
+function clearIfFirst(bag, base, id) { if (bag.i >= base.length && tries === 1) { (bag.clear = bag.clear || {})[id] = true; save(); } }
+const timesRetried = (bag, id) => (bag.extra || []).filter(x => x === id).length;
+const countText = (bag, base, label) => bag.i >= base.length
+  ? `${label} · 다시 풀기 ${bag.i - base.length + 1} / ${bag.extra.length}`
+  : `${label} · ${bag.i + 1} / ${base.length}`;
+function retryIntro(n) {
+  popup("try", `${NAME}야, 처음에 틀린 문제를<br>한 번 더 풀어 볼까?`, `${n}문제가 다시 나와. 이번엔 천천히 읽고 한 번에 맞혀 보자! 한 번에 맞혀야 끝나.`, [["좋아, 해 볼게!", () => armWait()]]);
+}
+
 function renderHome() {
   closePopup(); cur = null;
   const firstOpen = state.days.findIndex(d => !d.done);
   const allDone = firstOpen === -1;
   const cards = state.days.map((d, k) => {
-    const sub = d.done ? `다 했어! ${score(k)}/10` : d.i > 0 ? `${d.i}/10 하는 중` : "10문제";
+    const sub = d.done ? `다 했어! ${score(k)}/10` : d.i > 0 ? `${Math.min(d.i, 10)}/10 하는 중` : "10문제";
     return `<button class="day ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="Day ${k + 1}, ${sub}"><span class="d">Day ${k + 1}</span><span class="s">${sub}</span></button>`;
   }).join("");
   main.innerHTML = `
@@ -320,12 +361,15 @@ function startDay(k) {
 function renderQ() {
   closePopup();
   const d = state.days[cur];
-  if (d.i >= 10) return finishDay();
-  const q = QS[DAYS[cur][d.i] - 1]; tries = 0;
-  main.innerHTML = `<div class="top"><button class="link" id="home">← 처음 화면</button><span class="count">Day ${cur + 1} · ${d.i + 1} / 10</span></div>
-    <div class="bar" aria-hidden="true"><i style="width:${d.i * 10}%"></i></div>
-    <section class="card"><div class="sec">${SEC[q.sec][0]}</div>
-      <p class="q"><span class="qnum">${d.i + 1}번</span>밑줄 친 말을 바르게 고치면 무엇일까요?</p>
+  const base = DAYS[cur];
+  let added = 0;
+  if (d.i >= retryList(d, base).length && !(added = addRetry(d, base))) return finishDay();
+  const re = d.i >= base.length;
+  const q0 = QS[retryList(d, base)[d.i] - 1], q = re ? reshuffle(q0) : q0; tries = 0; armWait();
+  main.innerHTML = `<div class="top"><button class="link" id="home">← 처음 화면</button><span class="count">${countText(d, base, "Day " + (cur + 1))}</span></div>
+    <div class="bar" aria-hidden="true"><i style="width:${Math.min(100, d.i * 10)}%"></i></div>
+    <section class="card"><div class="sec">${re ? "🔁 다시 풀기 · " : ""}${SEC[q.sec][0]}</div>
+      <p class="q"><span class="qnum">${re ? "다시" : d.i + 1 + "번"}</span>밑줄 친 말을 바르게 고치면 무엇일까요?</p>
       <div class="box"><p class="sentence">${markWrong(q.s)}</p></div>
       <div class="opts" role="group" aria-label="바르게 고친 말 고르기">
         ${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="no">${k + 1}</span><span>${o}</span></button>`).join("")}
@@ -333,15 +377,17 @@ function renderQ() {
     </section>`;
   $("home").addEventListener("click", renderHome);
   main.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => choose(q, b)));
+  if (added) retryIntro(added);
 }
 
 function choose(q, btn) {
   if (btn.classList.contains("tried") || btn.classList.contains("right")) return;
   const k = Number(btn.dataset.k), res = state.days[cur].res;
+  if (tooFast(state.days[cur], q.n, "")) return;
   tries++;
   if (k === q.ans) {
     if (!(q.n in res)) res[q.n] = tries === 1;
-    save();
+    save(); clearIfFirst(state.days[cur], DAYS[cur], q.n);
     btn.classList.add("right");
     main.querySelectorAll(".opt").forEach(b => b.disabled = true);
     main.querySelector(".sentence").innerHTML = markFixed(q);
@@ -367,7 +413,7 @@ function showAnswer(q) {
 }
 
 function nextAction() {
-  const last = state.days[cur].i === 9;
+  const d = state.days[cur], last = d.i === retryList(d, DAYS[cur]).length - 1 && !missLeft(d, DAYS[cur]);
   return [last ? `Day ${cur + 1} 끝내기` : "다음 문제", () => { state.days[cur].i++; save(); renderQ(); window.scrollTo(0, 0); }];
 }
 
@@ -397,7 +443,7 @@ function finishDay() {
   main.innerHTML = `<section class="card center">
     <div class="sec">Day ${cur + 1} 완료!</div>
     <div class="big">${s} / 10</div>
-    <p class="q">${NAME}야, 오늘 10문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!</p>
+    <p class="q">${NAME}야, 오늘 10문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!${d.extra && d.extra.length ? " 틀린 문제도 다시 풀어서 모두 맞혔어!" : ""}</p>
     ${recordTable([cur])}
     <div class="btns"><button class="btn" id="home">처음 화면으로</button></div></section>`;
   $("home").addEventListener("click", renderHome);
@@ -406,12 +452,12 @@ function finishDay() {
 function recordTable(dayIdx) {
   const rows = [];
   dayIdx.forEach(k => DAYS[k].forEach((n, pos) => {
-    const r = state.days[k].res[n], q = QS[n - 1];
-    if (r !== true) rows.push(`<tr><td>Day ${k + 1} · ${pos + 1}번</td><td>${q.wrongWord} → ${q.right}</td><td>${SEC[q.sec][0]}</td><td>${r === false ? "다시 생각하거나 함께 정답 봄" : "풀지 않음"}</td></tr>`);
+    const r = state.days[k].res[n], q = QS[n - 1], fz = (state.days[k].fast || {})[n] || 0, rt = timesRetried(state.days[k], n);
+    if (r !== true || fz) rows.push(`<tr><td>Day ${k + 1} · ${pos + 1}번</td><td>${q.wrongWord} → ${q.right}</td><td>${SEC[q.sec][0]}</td><td>${r === true ? "처음에 맞힘" : r === false ? "다시 생각하거나 함께 정답 봄" : "풀지 않음"}</td><td>${fz ? fz + "번" : ""}</td><td>${rt ? rt + "번" : ""}</td></tr>`);
   }));
   return `<details><summary>보호자·선생님용 기록</summary>
-    <p class="note">처음 시도에서 맞히지 못한 문제입니다. 이 기록은 이 브라우저에만 남습니다.</p>
-    <div class="tbl"><table><thead><tr><th>날짜·순서</th><th>틀린 말 → 바른 말</th><th>묶음</th><th>상태</th></tr></thead><tbody>${rows.join("") || `<tr><td colspan="4">모든 문제를 처음에 맞혔어요.</td></tr>`}</tbody></table></div></details>`;
+    <p class="note">처음 시도에서 맞히지 못한 문제와 너무 빨리 누른 문제입니다. '빨리 누름'은 문제가 나오고 2.5초 안에 누른 횟수, '다시 풀기'는 끝에 다시 나온 횟수예요. 이 기록은 이 브라우저에만 남습니다.</p>
+    <div class="tbl"><table><thead><tr><th>날짜·순서</th><th>틀린 말 → 바른 말</th><th>묶음</th><th>상태</th><th>빨리 누름</th><th>다시 풀기</th></tr></thead><tbody>${rows.join("") || `<tr><td colspan="6">모든 문제를 처음에 맞혔어요.</td></tr>`}</tbody></table></div></details>`;
 }
 
 function renderCelebrate() {

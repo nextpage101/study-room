@@ -223,7 +223,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
         <path d="M100 14 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
       </svg>
       <span class="name">한자</span>
-      <span class="progress" id="p-hanja">8급 50자 · 하루 20문제</span>
+      <span class="progress" id="p-hanja">4A 50자 · 5A 49자</span>
       <span class="go">시작하기</span>
     </a>
   </nav>
@@ -381,7 +381,15 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
   })();  show("clock-quiz-days-v1", "p-clock");
   show("gugudan-quiz-days-v1", "p-gugu");
   show("hangul-quiz-days-v1", "p-kor");
-  show("hanja-quiz-8-v2", "p-hanja");
+  // 한자는 Day 대신 4A·5A 두 칸
+  try {
+    const h = JSON.parse(localStorage.getItem("hanja-quiz-4a5a-v2"));
+    if (h && h.days) {
+      const fin = ["4A", "5A"].filter((s, k) => h.days[k] && h.days[k].done);
+      if (fin.length === 2) document.getElementById("p-hanja").innerHTML = "<b>4A·5A 모두 끝!</b> 🎉";
+      else if (fin.length) document.getElementById("p-hanja").innerHTML = `<b>${fin[0]}</b> 끝냈어요`;
+    }
+  } catch (e) {}
   show("english-quiz-days-v1", "p-eng");
   // 받아쓰기: 9~14급, 급수마다 빈칸 채우기 + 받아쓰기
   try {

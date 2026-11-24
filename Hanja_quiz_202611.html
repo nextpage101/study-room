@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F0E3">
 <title>한자 퀴즈</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap&text=%E4%B8%80%E4%BA%8C%E4%B8%89%E5%9B%9B%E4%BA%94%E5%85%AD%E4%B8%83%E5%85%AB%E4%B9%9D%E5%8D%81%E6%97%A5%E6%9C%88%E7%81%AB%E6%B0%B4%E6%9C%A8%E9%87%91%E5%9C%9F%E5%B1%B1%E7%99%BD%E9%9D%91%E4%BA%BA%E7%88%B6%E6%AF%8D%E5%85%84%E5%BC%9F%E5%A5%B3%E7%8E%8B%E6%B0%91%E5%85%88%E7%94%9F%E6%9D%B1%E8%A5%BF%E5%8D%97%E5%8C%97%E4%B8%AD%E5%A4%A7%E5%B0%8F%E9%95%B7%E5%A4%96%E5%AF%B8%E5%AD%B8%E6%A0%A1%E6%95%8E%E5%AE%A4%E9%96%80%E5%9C%8B%E9%9F%93%E8%BB%8D%E5%B9%B4%E8%90%AC">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap&text=%E4%B8%BB%E4%BA%BA%E4%BD%8E%E5%85%84%E5%85%8E%E5%85%92%E5%85%A5%E5%85%A7%E5%86%AC%E5%87%BA%E5%89%8D%E5%8F%A3%E5%9C%9F%E5%9C%B0%E5%A4%8F%E5%A4%96%E5%A4%9A%E5%A4%A7%E5%A4%A9%E5%A5%B3%E5%AD%90%E5%AE%B6%E5%B0%8F%E5%B0%91%E5%B1%B1%E5%B7%9D%E5%B9%B4%E5%BC%9F%E5%BC%B1%E5%BC%B7%E5%BE%8C%E5%BF%83%E6%88%BF%E6%89%8B%E6%97%A5%E6%98%9F%E6%98%A5%E6%9C%88%E6%9C%89%E6%9C%A8%E6%A0%A1%E6%AF%8D%E6%B0%B4%E6%B1%9F%E6%B2%99%E6%B5%B7%E7%81%AB%E7%84%A1%E7%88%B6%E7%89%9B%E7%8A%AC%E7%8E%8B%E7%94%B0%E7%94%B7%E7%99%BD%E7%9B%AE%E7%9F%AD%E7%9F%B3%E7%A7%8B%E7%B1%B3%E7%BE%8A%E8%80%B3%E8%88%9F%E8%8A%B1%E8%99%8E%E8%A1%A3%E8%B1%86%E8%B1%A1%E8%B2%9D%E8%B5%A4%E8%B6%B3%E8%BA%AB%E8%BB%8A%E8%BC%95%E8%BF%91%E9%81%A0%E9%87%8D%E9%95%B7%E9%96%80%E9%9B%A8%E9%9B%AA%E9%9D%91%E9%9D%A2%E9%A2%A8%E9%A6%AC%E9%AB%98%E9%AD%9A%E9%B3%A5%E9%BB%83%E9%BB%91%E9%BC%BB">
 <style>
 /* Layout: 첫 화면(붓 친구·Day1~5) → 한 화면에 한 문제(한자 보고 뜻과 소리 고르기) → 완료 → 축하 */
 :root {
@@ -135,7 +135,23 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
 .meaning.on { color: var(--good); }
 .pc { font-family: var(--hanja); font-weight: 700; font-size: 36px; vertical-align: -3px; margin-right: 6px; color: var(--ink); }
 
+.day.set { width: calc((100% - 10px) / 2); padding: 22px 6px; }
+.day.set .d { font-size: 34px; }
+.day.set4A { background: #EAF6D9; border-color: #A8CE6C; } .day.set4A .d { color: #4E7A1E; }
+.day.set5A { background: #FFE6EE; border-color: #F4B4C9; } .day.set5A .d { color: #C2537A; }
+.day.set.next { box-shadow: 0 0 0 4px var(--sun-soft); }
+.day.set.done .s::before { content: "✓ "; color: var(--good); }
+.pic { display: block; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; font-size: 64px; line-height: 1.25; margin: 0 0 8px; letter-spacing: .05em; }
+.lv { display: inline-block; font-family: var(--display); font-size: 20px; line-height: 1; letter-spacing: .04em; border: 3px solid; border-radius: 12px; padding: 8px 16px 7px; }
+.lv4A { background: #EAF6D9; border-color: #A8CE6C; color: #4E7A1E; }
+.lv5A { background: #FFE6EE; border-color: #F4B4C9; color: #C2537A; }
+
 /* 휴대폰(세로 화면 또는 좁은 화면): 화면 폭에 비례해 크기를 정한다. 반드시 스타일 맨 끝에 둔다. */
+/* 너무 빨리 누를 때 잠깐 뜨는 알림 */
+.slow { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40; background: #FFF1F5; border: 3px solid #F9CFDC; color: #9E4A69; font-family: var(--display); font-size: clamp(20px, 5.6vw, 40px); padding: 12px 22px; border-radius: 99px; box-shadow: 0 6px 20px rgba(214, 140, 166, .3); opacity: 0; pointer-events: none; white-space: nowrap; }
+.slow.on { animation: slowNote 1.8s ease-out; }
+@keyframes slowNote { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
+
 @media (max-width: 560px), (orientation: portrait) {
   body { font-size: clamp(20px, 5.2vw, 42px); padding-top: calc(3vw + env(safe-area-inset-top, 0px)); }
   .wrap { max-width: none; gap: 3.5vw; }
@@ -150,6 +166,10 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
   .day .d { font-size: clamp(18px, 5.8vw, 46px); }
   .day .s { font-size: clamp(12px, 3.6vw, 28px); }
   .sec { font-size: clamp(16px, 4.8vw, 38px); }
+  .day.set { width: calc((100% - 2.6vw) / 2); padding: 5vw 1.5vw; min-height: 28vw; }
+  .day.set .d { font-size: clamp(28px, 9vw, 70px); }
+  .pic { font-size: clamp(52px, 17vw, 130px); }
+  .lv { font-size: clamp(18px, 5.4vw, 42px); border-width: 0.8vw; border-radius: 3vw; padding: 2vw 4.4vw 1.8vw; }
   .q { font-size: clamp(20px, 5.8vw, 46px); line-height: 1.5; }
   .qnum { font-size: clamp(18px, 5.4vw, 42px); padding: 1.4vw 3vw 1.2vw; margin-right: 2vw; vertical-align: .5vw; }
   .box { padding: 5.5vw 4vw; border-radius: 5vw; }
@@ -190,90 +210,151 @@ const MASCOT_SRC = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My
 const MASCOT = (alt, extra) => `<img class="mascot ${extra || ""}" src="${MASCOT_SRC}" alt="${alt}" width="260" height="260">`;
 
 const SEC = {
-  1: ["숫자 한자", "숫자 한자를 척척 읽는구나!"],
-  2: ["해·달과 자연", "자연을 나타내는 한자도 잘 아네!"],
-  3: ["사람과 가족", "가족 한자를 잘 기억했어!"],
-  4: ["방향과 크기", "방향과 크기 한자도 문제없네!"],
-  5: ["학교와 나라", "학교와 나라 한자까지 척척!"]
+  "4A": ["4A", "4A 한자도 척척 읽는구나!"],
+  "5A": ["5A", "5A 한자까지 문제없네!"]
 };
-// 한자능력검정시험 8급 50자. [묶음, 한자, 뜻과 소리(정답), 다른 보기1, 다른 보기2, 힌트]
-const RAW = [
-  [1, "一", "한 일", "두 이", "석 삼", "가로줄이 몇 개인지 손가락으로 세어 봐!"],
-  [1, "二", "두 이", "한 일", "열 십", "가로줄이 몇 개인지 손가락으로 세어 봐!"],
-  [1, "三", "석 삼", "두 이", "넉 사", "가로줄이 몇 개인지 세어 봐! '석'은 옛날에 '셋'을 부르던 말이야."],
-  [1, "四", "넉 사", "다섯 오", "석 삼", "네모 안에 다리 두 개가 들어 있어. '넉'은 옛날에 '넷'을 부르던 말이야."],
-  [1, "五", "다섯 오", "여섯 륙", "넉 사", "한 손의 손가락을 모두 펴 봐. 넷보다 하나 많은 수야."],
-  [1, "六", "여섯 륙", "일곱 칠", "다섯 오", "모자를 쓴 사람이 다리를 벌리고 선 모양이야. 다섯보다 하나 많은 수!"],
-  [1, "七", "일곱 칠", "아홉 구", "여섯 륙", "十과 닮았지만 아래 꼬리가 오른쪽으로 휘었어. 일주일은 며칠일까?"],
-  [1, "八", "여덟 팔", "여섯 륙", "아홉 구", "두 줄이 양쪽으로 쫙 벌어진 모양이야. 문어 다리는 몇 개일까?"],
-  [1, "九", "아홉 구", "일곱 칠", "여덟 팔", "열보다 하나 작은 수야."],
-  [1, "十", "열 십", "일곱 칠", "한 일", "가로와 세로가 만난 + 모양이야. 두 손의 손가락을 모두 세어 봐!"],
-  [2, "日", "날 일", "달 월", "흰 백", "동그란 해님을 네모나게 그린 모양이야. 해가 뜨면 하루가 시작돼."],
-  [2, "月", "달 월", "날 일", "물 수", "밤하늘에 뜨는 초승달 모양이야. 월요일의 '월'!"],
-  [2, "火", "불 화", "물 수", "나무 목", "불꽃이 활활 타오르는 모양이야. 화요일의 '화'!"],
-  [2, "水", "물 수", "불 화", "흙 토", "냇물이 졸졸 흘러가는 모양이야. 수요일의 '수'!"],
-  [2, "木", "나무 목", "쇠 금", "뫼 산", "위로는 가지, 아래로는 뿌리가 뻗은 모양이야. 목요일의 '목'!"],
-  [2, "金", "쇠 금", "흙 토", "나무 목", "땅속에 반짝이는 덩어리가 묻혀 있는 모양이야. 금요일의 '금'! 성으로 쓸 때는 '김'이라고 읽어."],
-  [2, "土", "흙 토", "쇠 금", "흰 백", "땅 위에 흙이 볼록 쌓인 모양이야. 토요일의 '토'!"],
-  [2, "山", "뫼 산", "흙 토", "날 일", "봉우리 세 개가 솟아 있는 모양이야. '뫼'는 옛날에 쓰던 말이야."],
-  [2, "白", "흰 백", "날 일", "푸를 청", "日 위에 점이 하나 있어. 햇빛이 비치면 환하고 하얘지지?"],
-  [2, "靑", "푸를 청", "흰 백", "달 월", "아래에 月이 들어 있어. 맑은 하늘과 새싹의 색을 떠올려 봐."],
-  [3, "人", "사람 인", "큰 대", "여자 녀", "두 다리로 서 있는 사람을 옆에서 본 모양이야."],
-  [3, "父", "아버지 부", "어머니 모", "형 형", "부모님 중 한 분이야. 母와 짝이 되는 글자!"],
-  [3, "母", "어머니 모", "여자 녀", "아버지 부", "女 안에 점이 두 개 있어. 아기를 품어 주는 분을 떠올려 봐."],
-  [3, "兄", "형 형", "아우 제", "아버지 부", "입(口)을 크게 벌린 사람 모양이야. 동생보다 먼저 태어난 사람!"],
-  [3, "弟", "아우 제", "형 형", "사람 인", "'아우'는 옛날에 동생을 부르던 말이야. 兄과 짝이 되는 글자!"],
-  [3, "女", "여자 녀", "어머니 모", "임금 왕", "무릎을 꿇고 두 손을 모은 사람 모양이야. 母에서 점 두 개를 빼면 이 글자!"],
-  [3, "王", "임금 왕", "흙 토", "백성 민", "가로줄 세 개를 세로줄이 이어 줘. 하늘과 사람과 땅을 다스리는 사람!"],
-  [3, "民", "백성 민", "임금 왕", "사람 인", "'백성'은 나라에 사는 많은 사람들을 말해."],
-  [3, "先", "먼저 선", "날 생", "형 형", "발이 사람보다 앞으로 나간 모양이야. 선생님의 '선'!"],
-  [3, "生", "날 생", "먼저 선", "흙 토", "흙(土) 위로 새싹이 쏙 돋아난 모양이야. 생일의 '생'!"],
-  [4, "東", "동녘 동", "서녘 서", "나무 목", "나무(木) 사이로 해(日)가 떠오르는 모양이야. 해가 뜨는 쪽!"],
-  [4, "西", "서녘 서", "동녘 동", "남녘 남", "해가 질 무렵 새가 둥지에 앉은 모양이야. 해가 지는 쪽!"],
-  [4, "南", "남녘 남", "북녘 북", "서녘 서", "햇볕이 잘 드는 따뜻한 쪽이야. 지도에서는 아래쪽!"],
-  [4, "北", "북녘 북", "남녘 남", "동녘 동", "두 사람이 등을 맞대고 앉은 모양이야. 추운 쪽, 지도에서는 위쪽!"],
-  [4, "中", "가운데 중", "큰 대", "작을 소", "네모 한가운데를 줄이 쭉 꿰뚫고 있어."],
-  [4, "大", "큰 대", "작을 소", "사람 인", "사람이 두 팔과 두 다리를 쫙 벌린 모양이야."],
-  [4, "小", "작을 소", "큰 대", "가운데 중", "자그마한 점 세 개가 모여 있는 모양이야."],
-  [4, "長", "긴 장", "바깥 외", "큰 대", "머리카락을 길게 늘어뜨린 어른 모양이야."],
-  [4, "外", "바깥 외", "가운데 중", "긴 장", "안쪽의 반대를 떠올려 봐. 외출할 때의 '외'!"],
-  [4, "寸", "마디 촌", "작을 소", "긴 장", "손목에 점을 하나 찍은 모양이야. 삼촌의 '촌'!"],
-  [5, "學", "배울 학", "가르칠 교", "학교 교", "지붕 아래에서 아이(子)가 공부하는 모양이야. 학생의 '학'!"],
-  [5, "校", "학교 교", "배울 학", "집 실", "왼쪽에 나무(木)가 있어. 나무가 있는 곳에 지은 공부하는 집!"],
-  [5, "敎", "가르칠 교", "배울 학", "학교 교", "어른이 아이(子)에게 무언가 알려 주는 모양이야. 교과서의 '교'!"],
-  [5, "室", "집 실", "문 문", "나라 국", "지붕(宀) 아래에 있는 방이야. 교실의 '실'!"],
-  [5, "門", "문 문", "집 실", "나라 국", "양쪽으로 여닫는 두 짝 문 모양이야."],
-  [5, "國", "나라 국", "한국 한", "군사 군", "큰 네모(口)가 땅을 둘러싼 울타리야. 그 안에 사람들이 살아."],
-  [5, "韓", "한국 한", "나라 국", "일만 만", "우리나라 이름 '대○민국'의 빈칸에 들어가는 글자야!"],
-  [5, "軍", "군사 군", "나라 국", "해 년", "덮개(冖) 아래에 수레(車)가 있어. 나라를 지키는 사람들!"],
-  [5, "年", "해 년", "일만 만", "날 일", "1년, 2년 할 때 쓰는 글자야. 새해의 '해'를 떠올려 봐."],
-  [5, "萬", "일만 만", "해 년", "열 십", "아주아주 큰 수야. 천보다 열 배 큰 수!"]
+// [한자, 뜻과 소리, 힌트, 짝 번호] — 짝 번호가 같은 글자(반대말, 색, 계절, 동물 등)는 서로 헷갈리기 쉬운 보기로 쓴다
+const A4 = [
+  ["主", "주인 주", "王 위에 점이 하나 있어. 이 집의 ○인은 누구일까? 주인공의 '주'!", 0],
+  ["年", "해 년", "1년, 2년 할 때 쓰는 글자야. 새해의 '해'를 떠올려 봐.", 0],
+  ["重", "무거울 중", "들기 힘들 만큼 무게가 많이 나가는 것! 輕과 반대말이야.", 1],
+  ["輕", "가벼울 경", "깃털처럼 들기 쉬운 것을 떠올려 봐. 重과 반대말이야.", 1],
+  ["近", "가까울 근", "辶은 걸어가는 모양이야. 조금만 걸어도 닿는 곳! 遠과 반대말이야.", 2],
+  ["遠", "멀 원", "辶은 걸어가는 모양이야. 한참 걸어야 닿는 곳! 近과 반대말이야.", 2],
+  ["短", "짧을 단", "왼쪽에 화살(矢)이 있어. 화살처럼 길이가 짧은 것! 長과 반대말이야.", 3],
+  ["長", "긴 장", "머리카락을 길게 늘어뜨린 어른 모양이야. 短과 반대말!", 3],
+  ["低", "낮을 저", "왼쪽에 사람(亻)이 있어. 몸을 아래로 숙인 모양! 高와 반대말이야.", 4],
+  ["高", "높을 고", "높이 솟은 건물(누각) 모양이야. 低와 반대말!", 4],
+  ["無", "없을 무", "아무것도 남지 않았을 때를 떠올려 봐. 有와 반대말이야.", 5],
+  ["有", "있을 유", "손에 고기(月)를 들고 있는 모양이야. 가진 것이 있다! 無와 반대말.", 5],
+  ["入", "들어갈 입", "사람이 안으로 쏙 들어가는 모양이야. 입구의 '입'! 出과 반대말.", 6],
+  ["出", "나갈 출", "새싹이 땅 위로 쑥 나오는 모양이야. 출구의 '출'! 入과 반대말.", 6],
+  ["弱", "약할 약", "활(弓) 두 개가 축 늘어진 모양이야. 힘이 없어! 強과 반대말.", 7],
+  ["強", "강할 강", "왼쪽에 활(弓)이 있어. 활을 힘껏 당기는 센 힘! 弱과 반대말이야.", 7],
+  ["後", "뒤 후", "왼쪽에 걸어가는 모양(彳)이 있어. 앞이 아니라 반대쪽! 前과 반대말.", 8],
+  ["前", "앞 전", "앞으로 나아가는 배 모양이야. 오전의 '전'! 後와 반대말.", 8],
+  ["少", "적을 소", "小 아래에 삐침이 하나 더 있어. 양이 많지 않은 것! 多와 반대말.", 9],
+  ["多", "많을 다", "夕(저녁 석)이 두 개 겹쳐 있어. 수가 아주 많아! 少와 반대말.", 9],
+  ["小", "작을 소", "자그마한 점 세 개가 모여 있는 모양이야. 大와 반대말!", 10],
+  ["大", "큰 대", "사람이 두 팔과 두 다리를 쫙 벌린 모양이야. 小와 반대말!", 10],
+  ["赤", "붉을 적", "아래에 불꽃 모양이 있어. 불이 활활 타는 색! 적십자의 '적'.", 11],
+  ["黃", "누를 황", "잘 익은 벼와 바나나의 색이야. 황금의 '황'!", 11],
+  ["白", "흰 백", "日 위에 점이 하나 있어. 눈처럼 환한 색!", 11],
+  ["黑", "검을 흑", "아래에 불(灬)이 있어. 불에 그을린 까만 색!", 11],
+  ["星", "별 성", "해(日) 아래에 生이 있어. 밤하늘에 반짝반짝!", 12],
+  ["兒", "아이 아", "머리가 크고 몸이 작은 어린 사람 모양이야. 아동의 '아'!", 0],
+  ["房", "방 방", "위에 문(戶)이 있어. 문을 열고 들어가 잠자는 곳!", 0],
+  ["雪", "눈 설", "위에 비(雨)가 있어. 겨울 하늘에서 하얗게 내려와!", 12],
+  ["冬", "겨울 동", "아래에 얼음 점(冫) 두 개가 있어. 가장 추운 계절!", 13],
+  ["秋", "가을 추", "벼(禾)와 불(火)이 있어. 곡식이 익는 계절, 추석의 '추'!", 13],
+  ["夏", "여름 하", "가장 더운 계절이야. 하복(더울 때 입는 옷)의 '하'!", 13],
+  ["春", "봄 춘", "아래에 해(日)가 있어. 꽃이 피는 따뜻한 계절!", 13],
+  ["外", "바깥 외", "안쪽의 반대를 떠올려 봐. 외출할 때의 '외'!", 14],
+  ["內", "안 내", "울타리(冂) 안으로 들어간 모양이야. 外와 반대말!", 14],
+  ["身", "몸 신", "배가 볼록한 사람을 옆에서 본 모양이야. 신체의 '신'!", 15],
+  ["心", "마음 심", "가슴 속 심장 모양이야. 기쁘고 슬픈 걸 느끼는 곳!", 15],
+  ["馬", "말 마", "갈기를 휘날리며 달리는 동물이야. 아래 점 네 개는 다리!", 16],
+  ["虎", "호랑이 호", "위에 줄무늬 머리(虍)가 있어. 숲 속의 왕, 어흥!", 16],
+  ["象", "코끼리 상", "긴 코가 아래로 늘어진 아주 큰 동물 모양이야.", 16],
+  ["兎", "토끼 토", "귀가 길고 깡충깡충 뛰는 동물이야. 꼬리(丶)가 짧아!", 16],
+  ["貝", "조개 패", "단단한 껍데기 두 장이 있는 바닷가 생물 모양이야.", 17],
+  ["沙", "모래 사", "물(氵) 옆에 작은(少) 알갱이가 잔뜩! 바닷가 놀이터에 있어.", 17],
+  ["舟", "배 주", "물 위에 둥둥 떠 가는 작은 탈것 모양이야.", 17],
+  ["海", "바다 해", "물(氵)이 아주 많이 모인 곳! 해수욕장의 '해'.", 17],
+  ["面", "얼굴 면", "둘레 안에 눈(目)이 있는 모양이야. 가면의 '면'!", 18],
+  ["鼻", "코 비", "맨 위에 自가 있어. 自는 원래 코 모양이야. 냄새를 맡는 곳!", 18],
+  ["目", "눈 목", "눈을 세워서 그린 모양이야. 안에 눈동자가 보이지?", 18],
+  ["耳", "귀 이", "소리를 듣는 곳 모양이야. 얼굴 양옆에 있어!", 18]
 ];
-const PERMS = [[0,1,2],[1,0,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0]];
-const QS = RAW.map(([sec, c, right, w1, w2, hint], i) => {
-  const raw = [right, w1, w2], order = PERMS[(i * 5 + 2) % 6];
-  return {n: i + 1, sec, c, opts: order.map(k => raw[k]), ans: order.indexOf(0), right, hint};
-});
-// 하루 20문제: 50자를 두 번씩(100문제) 무작위로 섞어 5일에 나눈다. 하루 안에서는 같은 글자가 두 번 나오지 않는다
-const PER_DAY = 20;
+const A5 = [
+  ["地", "땅 지", "왼쪽에 흙(土)이 있어. 우리가 밟고 서 있는 곳! 天과 짝이야.", 1],
+  ["天", "하늘 천", "사람(大) 머리 위에 一이 있어. 머리 위 높은 곳! 地와 짝이야.", 1],
+  ["校", "학교 교", "왼쪽에 나무(木)가 있어. 매일 친구들과 공부하러 가는 곳!", 2],
+  ["家", "집 가", "지붕(宀) 아래에 돼지(豕)가 있어. 가족이 함께 사는 곳!", 2],
+  ["衣", "옷 의", "목둘레와 소매가 있는 윗도리 모양이야. 몸에 입는 것!", 0],
+  ["面", "얼굴 면", "둘레 안에 눈(目)이 있는 모양이야. 가면의 '면'!", 3],
+  ["足", "발 족", "아래가 발가락처럼 벌어져 있어. 축구할 때 공을 차는 곳!", 3],
+  ["手", "손 수", "손가락을 쫙 편 모양이야. 박수의 '수'!", 3],
+  ["鼻", "코 비", "맨 위에 自가 있어. 自는 원래 코 모양이야. 냄새를 맡는 곳!", 3],
+  ["口", "입 구", "입을 네모나게 그린 모양이야. 밥을 먹고 말을 하는 곳!", 3],
+  ["目", "눈 목", "눈을 세워서 그린 모양이야. 안에 눈동자가 보이지?", 3],
+  ["耳", "귀 이", "소리를 듣는 곳 모양이야. 얼굴 양옆에 있어!", 3],
+  ["弟", "아우 제", "'아우'는 옛날에 동생을 부르던 말이야. 兄과 짝!", 4],
+  ["兄", "형 형", "입(口)을 크게 벌린 사람 모양이야. 동생보다 먼저 태어난 사람!", 4],
+  ["母", "어머니 모", "女 안에 점이 두 개 있어. 아기를 품어 주는 분을 떠올려 봐.", 4],
+  ["父", "아버지 부", "부모님 중 한 분이야. 母와 짝이 되는 글자!", 4],
+  ["女", "여자 녀", "무릎을 꿇고 두 손을 모은 사람 모양이야. 男과 짝!", 4],
+  ["男", "남자 남", "밭(田)에서 힘(力)을 쓰는 사람이야. 女와 짝!", 4],
+  ["子", "아들 자", "두 팔을 벌린 아기 모양이야. 부모님이 낳은 아이!", 4],
+  ["人", "사람 인", "두 다리로 서 있는 사람을 옆에서 본 모양이야.", 4],
+  ["王", "임금 왕", "가로줄 세 개를 세로줄이 이어 줘. 나라를 다스리는 사람!", 0],
+  ["田", "밭 전", "네모를 바둑판처럼 나눈 모양이야. 곡식과 채소를 심는 곳!", 5],
+  ["石", "돌 석", "언덕(厂) 아래 굴러떨어진 덩어리(口) 모양이야. 아주 단단해!", 5],
+  ["江", "강 강", "왼쪽에 물(氵)이 있어. 아주 큰 물줄기, 한○!", 5],
+  ["土", "흙 토", "땅 위에 흙이 볼록 쌓인 모양이야. 토요일의 '토'!", 5],
+  ["木", "나무 목", "위로는 가지, 아래로는 뿌리가 뻗은 모양이야. 목요일의 '목'!", 5],
+  ["水", "물 수", "냇물이 졸졸 흘러가는 모양이야. 수요일의 '수'!", 5],
+  ["火", "불 화", "불꽃이 활활 타오르는 모양이야. 화요일의 '화'!", 5],
+  ["川", "내 천", "세 줄기 물이 나란히 흘러가는 모양이야. '내'는 시냇물이야.", 5],
+  ["山", "산 산", "봉우리 세 개가 솟아 있는 모양이야.", 5],
+  ["月", "달 월", "밤하늘에 뜨는 초승달 모양이야. 월요일의 '월'!", 6],
+  ["日", "해 일", "동그란 해님을 네모나게 그린 모양이야. 일요일의 '일'!", 6],
+  ["車", "수레 차", "위에서 본 바퀴 두 개와 굴대 모양이야. 자동차의 '차'!", 0],
+  ["門", "문 문", "양쪽으로 여닫는 두 짝 문 모양이야.", 0],
+  ["赤", "붉을 적", "아래에 불꽃 모양이 있어. 불이 활활 타는 색! 적십자의 '적'.", 7],
+  ["靑", "푸를 청", "아래에 月이 들어 있어. 맑은 하늘과 새싹의 색!", 7],
+  ["黑", "검을 흑", "아래에 불(灬)이 있어. 불에 그을린 까만 색!", 7],
+  ["白", "흰 백", "日 위에 점이 하나 있어. 눈처럼 환한 색!", 7],
+  ["花", "꽃 화", "위에 풀(艹)이 있어. 봄에 활짝 피어나!", 8],
+  ["豆", "콩 두", "뚜껑 있는 그릇 모양이야. 밥에 섞어 먹는 동글동글한 알!", 8],
+  ["米", "쌀 미", "十 둘레에 낟알이 흩어진 모양이야. 밥을 지을 때 써!", 8],
+  ["鳥", "새 조", "부리와 깃털, 다리가 있는 동물 모양이야. 하늘을 훨훨!", 9],
+  ["魚", "물고기 어", "머리와 비늘, 꼬리(灬)가 있어. 물속에서 헤엄쳐!", 9],
+  ["牛", "소 우", "뿔이 달린 머리를 앞에서 본 모양이야. 음매~", 9],
+  ["羊", "양 양", "위에 뿔 두 개가 있어. 털이 복슬복슬, 매에~", 9],
+  ["馬", "말 마", "갈기를 휘날리며 달리는 동물이야. 아래 점 네 개는 다리!", 9],
+  ["犬", "개 견", "大 옆에 점이 하나 있어. 멍멍!", 9],
+  ["風", "바람 풍", "안에 벌레(虫)가 있어. 나뭇잎을 살랑살랑 흔드는 것!", 10],
+  ["雨", "비 우", "하늘(一)에서 물방울이 똑똑 떨어지는 모양이야.", 10]
+];
+const QS = [...A4.map(r => ["4A", ...r]), ...A5.map(r => ["5A", ...r])]
+  .map(([sec, c, right, hint, g], i) => ({n: i + 1, sec, c, right, hint, g}));
+// 그림 힌트: 틀렸을 때 힌트 팝업에 크게, 맞히거나 같이 정답을 볼 때 한 번 더 보여 준다(그림으로 나타내기 어려운 글자는 뺌)
+const PIC = {
+  "年": "📅", "重": "🏋️", "輕": "🎈", "近": "🐶👧", "遠": "👧 · · · ⛰️", "短": "🖍️", "長": "🐍", "低": "🐢", "高": "🦒",
+  "無": "🕳️", "有": "🎁", "入": "🚶➡️🚪", "出": "🚪➡️🚶", "弱": "🐣", "強": "💪", "少": "🍪", "多": "🍪🍪🍪🍪", "小": "🐭", "大": "🐋",
+  "赤": "🔴", "黃": "🟡🍌", "白": "⚪", "黑": "⚫", "靑": "🟦🌱", "星": "⭐", "兒": "👶", "房": "🛏️", "雪": "❄️",
+  "冬": "⛄", "秋": "🍁", "夏": "🍉", "春": "🌸", "身": "🧍", "心": "❤️", "馬": "🐴", "虎": "🐯", "象": "🐘", "兎": "🐰",
+  "貝": "🐚", "沙": "🏖️", "舟": "⛵", "海": "🌊", "面": "🙂", "鼻": "👃", "目": "👁️", "耳": "👂",
+  "地": "🌍", "天": "🌤️", "校": "🏫", "家": "🏠", "衣": "👕", "足": "🦶", "手": "✋", "口": "👄", "母": "👩", "父": "👨",
+  "女": "👧", "男": "👦", "子": "👶", "人": "🧍", "王": "👑", "田": "🌾", "石": "🗿", "江": "🏞️", "土": "🟫", "木": "🌳",
+  "水": "💧", "火": "🔥", "川": "💦", "山": "⛰️", "月": "🌙", "日": "☀️", "車": "🚗", "門": "🚪", "花": "🌷", "豆": "🥜",
+  "米": "🍚", "鳥": "🐦", "魚": "🐟", "牛": "🐮", "羊": "🐑", "犬": "🐶", "風": "🌬️", "雨": "🌧️"
+};
+const picOf = q => PIC[q.c] ? `<span class="pic" role="img" aria-label="그림 힌트">${PIC[q.c]}</span>` : "";
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-function makePlan() {
-  const ns = QS.map(q => q.n);
-  for (;;) {
-    const seq = [...shuffle(ns), ...shuffle(ns)];
-    const days = [0, 1, 2, 3, 4].map(k => seq.slice(k * PER_DAY, (k + 1) * PER_DAY));
-    if (days.every(d => new Set(d).size === PER_DAY)) return days;
-  }
+// 보기 3개: 정답 + 같은 섹션에서 헷갈리기 쉬운 짝 하나 + 같은 섹션 다른 글자 하나. 순서는 문제를 낼 때마다 섞는다
+function makeOpts(q) {
+  const pickOne = a => a[Math.floor(Math.random() * a.length)];
+  const same = QS.filter(x => x.sec === q.sec && x.right !== q.right);
+  const near = q.g ? same.filter(x => x.g === q.g) : [];
+  const w1 = pickOne(near.length ? near : same);
+  const w2 = pickOne(same.filter(x => x.right !== w1.right));
+  return shuffle([q.right, w1.right, w2.right]);
 }
+// 섹션 2칸: 4A 한 칸(50문제), 5A 한 칸(49문제). 칸마다 그 섹션 글자를 무작위로 섞는다
+const SETS = ["4A", "5A"];
+const makePlan = () => SETS.map(s => shuffle(QS.filter(q => q.sec === s).map(q => q.n)));
+const dayLen = k => state.plan[k].length;
 const CHEERS = [`${NAME}야, 정답이야!`, `와, ${NAME}야 맞았어!`, `딩동댕! ${NAME} 최고!`, `멋져, ${NAME}야!`];
-const KEY = "hanja-quiz-8-v2";
-const fresh = () => ({plan: makePlan(), days: [0, 1, 2, 3, 4].map(() => ({i: 0, res: {}, done: false})), celebrated: false});
+const KEY = "hanja-quiz-4a5a-v2";
+const fresh = () => ({plan: makePlan(), days: SETS.map(() => ({i: 0, res: {}, done: false})), celebrated: false});
 let state = load() || fresh();
 let cur = null, tries = 0;
 const $ = id => document.getElementById(id);
 const main = $("main");
 
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.plan && s.plan.length === 5 && s.plan[0].length === PER_DAY && s.days && s.days.length === 5 ? s : null; } catch (e) { return null; } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.plan && s.plan.length === SETS.length && s.plan.flat().length === QS.length && s.days && s.days.length === SETS.length ? s : null; } catch (e) { return null; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 const reveal = q => { const m = $("meaning"); m.textContent = q.right; m.classList.add("on"); };
 
@@ -304,22 +385,58 @@ function logToday(subj, label) {
 }
 const score = k => state.plan[k].filter(n => state.days[k].res[n] === true).length;
 
+/* ---------- 찍기 방지 ----------
+   ② 문제가 나오고 WAIT_MS 안에 누르면 답을 받지 않고 "천천히" 알림을 띄운다(듣기 문제는 소리가 끝날 즈음부터 잰다).
+   ① 처음에 틀린 문제는 Day 끝에 순서와 보기를 바꿔 다시 낸다. 다시 풀기에서 한 번에 맞혀야 끝난다.
+   ⑤ 보호자 기록에 '빨리 누름'과 '다시 풀기' 횟수를 남긴다. */
+const WAIT_MS = 2500;
+let readyAt = 0;
+const armWait = (extra = 0) => { readyAt = Date.now() + WAIT_MS + extra; };
+function tooFast(bag, id, msg) {
+  if (Date.now() >= readyAt) return false;
+  bag.fast = bag.fast || {}; bag.fast[id] = (bag.fast[id] || 0) + 1; save();
+  let t = document.getElementById("slow");
+  if (!t) { t = document.createElement("div"); t.id = "slow"; t.className = "slow"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg || "🐢 천천히 읽고 골라 볼까?";
+  t.classList.remove("on"); void t.offsetWidth; t.classList.add("on");
+  return true;
+}
+const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const reshuffle = q => { const o = shuf(q.opts.map((_, i) => i)); return {...q, opts: o.map(i => q.opts[i]), ans: o.indexOf(q.ans)}; };
+const retryList = (bag, base) => [...base, ...(bag.extra || [])];
+const missOf = (bag, base) => base.filter(id => bag.res[id] !== true && !(bag.clear || {})[id]);
+const missLeft = (bag, base) => missOf(bag, base).length > 0;
+function addRetry(bag, base) {
+  const miss = missOf(bag, base);
+  if (!miss.length) return 0;
+  bag.extra = [...(bag.extra || []), ...shuf(miss)]; save();
+  return miss.length;
+}
+function clearIfFirst(bag, base, id) { if (bag.i >= base.length && tries === 1) { (bag.clear = bag.clear || {})[id] = true; save(); } }
+const timesRetried = (bag, id) => (bag.extra || []).filter(x => x === id).length;
+const countText = (bag, base, label) => bag.i >= base.length
+  ? `${label} · 다시 풀기 ${bag.i - base.length + 1} / ${bag.extra.length}`
+  : `${label} · ${bag.i + 1} / ${base.length}`;
+function retryIntro(n) {
+  popup("try", `${NAME}야, 처음에 틀린 문제를<br>한 번 더 풀어 볼까?`, `${n}문제가 다시 나와. 이번엔 천천히 읽고 한 번에 맞혀 보자! 한 번에 맞혀야 끝나.`, [["좋아, 해 볼게!", () => armWait()]]);
+}
+
 function renderHome() {
   closePopup(); cur = null;
   const firstOpen = state.days.findIndex(d => !d.done);
   const allDone = firstOpen === -1;
   const cards = state.days.map((d, k) => {
-    const sub = d.done ? `다 했어! ${score(k)}/20` : d.i > 0 ? `${d.i}/20 하는 중` : "20문제";
-    return `<button class="day ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="Day ${k + 1}, ${sub}"><span class="d">Day ${k + 1}</span><span class="s">${sub}</span></button>`;
+    const sub = d.done ? `다 했어! ${score(k)}/${dayLen(k)}` : d.i > 0 ? `${d.i}/${dayLen(k)} 하는 중` : `${dayLen(k)}문제`;
+    return `<button class="day set set${SETS[k]} ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="${SETS[k]}, ${sub}"><span class="d">${SETS[k]}</span><span class="s">${sub}</span></button>`;
   }).join("");
   main.innerHTML = `
     <a class="link" href="index.html">← 과목 고르기</a>
     <section class="card hero">
       ${MASCOT("먹물 붓 친구가 지호를 반기는 그림", "bob")}
       <h2><span class="nw">오늘은</span> <span class="nw">한자 시간</span></h2>
-      <p class="lead">한자를 보고 뜻과 소리를 맞혀 보자~</p>
+      <p class="lead">4A와 5A 중에서 골라 한자를 맞혀 보자~</p>
     </section>
-    <section class="days" aria-label="날짜별 문제">${cards}</section>
+    <section class="days" aria-label="섹션별 문제">${cards}</section>
     ${allDone ? `<div class="btns"><button class="btn soft" id="party">축하 다시 보기</button></div>` : ""}`;
   main.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => startDay(Number(b.dataset.day))));
   if (allDone) $("party").addEventListener("click", renderCelebrate);
@@ -334,12 +451,12 @@ function startDay(k) {
 function renderQ() {
   closePopup();
   const d = state.days[cur];
-  if (d.i >= PER_DAY) return finishDay();
-  const q0 = QS[state.plan[cur][d.i] - 1], o = shuffle([0, 1, 2]); tries = 0;
-  const q = {...q0, opts: o.map(k => q0.opts[k]), ans: o.indexOf(q0.ans)};
-  main.innerHTML = `<div class="top"><button class="link" id="home">← 처음 화면</button><span class="count">Day ${cur + 1} · ${d.i + 1} / 20</span></div>
-    <div class="bar" aria-hidden="true"><i style="width:${d.i * 100 / PER_DAY}%"></i></div>
-    <section class="card"><div class="sec">${SEC[q.sec][0]}</div>
+  if (d.i >= dayLen(cur)) return finishDay();
+  const q0 = QS[state.plan[cur][d.i] - 1], opts = makeOpts(q0); tries = 0; armWait();
+  const q = {...q0, opts, ans: opts.indexOf(q0.right)};
+  main.innerHTML = `<div class="top"><button class="link" id="home">← 처음 화면</button><span class="count">${SETS[cur]} · ${d.i + 1} / ${dayLen(cur)}</span></div>
+    <div class="bar" aria-hidden="true"><i style="width:${d.i * 100 / dayLen(cur)}%"></i></div>
+    <section class="card"><div class="sec"><span class="lv lv${q.sec}">${SEC[q.sec][0]}</span></div>
       <p class="q"><span class="qnum">${d.i + 1}번</span>이 한자의 뜻과 소리는 무엇일까요?</p>
       <div class="box"><p class="hanja">${q.c}</p><p class="meaning" id="meaning">?</p></div>
       <div class="opts" role="group" aria-label="뜻과 소리 고르기">
@@ -353,6 +470,7 @@ function renderQ() {
 function choose(q, btn) {
   if (btn.classList.contains("tried") || btn.classList.contains("right")) return;
   const k = Number(btn.dataset.k), res = state.days[cur].res;
+  if (tooFast(state.days[cur], q.n, "🐢 천천히 보고 골라 볼까?")) return;
   tries++;
   if (k === q.ans) {
     if (!(q.n in res)) res[q.n] = tries === 1;
@@ -362,13 +480,13 @@ function choose(q, btn) {
     reveal(q);
     const extra = tries > 1 ? " 포기하지 않고 다시 찾아냈네!" : "";
     popup("good", CHEERS[Math.floor(Math.random() * CHEERS.length)],
-      `<span class="pc">${q.c}</span><b>${q.right}</b><br>${SEC[q.sec][1]}${extra}`, [nextAction()]);
+      `${picOf(q)}<span class="pc">${q.c}</span><b>${q.right}</b><br>${SEC[q.sec][1]}${extra}`, [nextAction()]);
     return;
   }
   btn.classList.add("tried"); btn.setAttribute("aria-disabled", "true");
   const acts = [["다시 해 볼게!", () => {}]];
   if (tries >= 2) acts.push(["같이 정답 보기", () => showAnswer(q), "soft"]);
-  popup("try", `괜찮아 ${NAME}야,<br>다시 생각해 볼까?`, `힌트: ${q.hint}`, acts);
+  popup("try", `괜찮아 ${NAME}야,<br>다시 생각해 볼까?`, `${picOf(q)}힌트: ${q.hint}`, acts);
 }
 
 function showAnswer(q) {
@@ -378,12 +496,12 @@ function showAnswer(q) {
   main.querySelectorAll(".opt").forEach(b => { b.disabled = true; if (Number(b.dataset.k) === q.ans) b.classList.add("right"); });
   reveal(q);
   popup("good", `${NAME}야, 같이 정답을 봐요`,
-    `<span class="pc">${q.c}</span><b>${q.right}</b><br>${q.hint}<br>다음엔 ${NAME}가 바로 맞힐 수 있을 거야!`, [nextAction()]);
+    `${picOf(q)}<span class="pc">${q.c}</span><b>${q.right}</b><br>${q.hint}<br>다음엔 ${NAME}가 바로 맞힐 수 있을 거야!`, [nextAction()]);
 }
 
 function nextAction() {
-  const last = state.days[cur].i === PER_DAY - 1;
-  return [last ? `Day ${cur + 1} 끝내기` : "다음 문제", () => { state.days[cur].i++; save(); renderQ(); window.scrollTo(0, 0); }];
+  const last = state.days[cur].i === dayLen(cur) - 1;
+  return [last ? `${SETS[cur]} 끝내기` : "다음 문제", () => { state.days[cur].i++; save(); renderQ(); window.scrollTo(0, 0); }];
 }
 
 function popup(kind, title, body, actions) {
@@ -406,13 +524,13 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save(); logToday("hanja", "Day " + (cur + 1));
+  const d = state.days[cur]; d.done = true; save(); logToday("hanja", SETS[cur]);
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const s = score(cur);
   main.innerHTML = `<section class="card center">
-    <div class="sec">Day ${cur + 1} 완료!</div>
-    <div class="big">${s} / 20</div>
-    <p class="q">${NAME}야, 오늘 20문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!</p>
+    <div class="sec"><span class="lv lv${SETS[cur]}">${SETS[cur]}</span> 완료!</div>
+    <div class="big">${s} / ${dayLen(cur)}</div>
+    <p class="q">${NAME}야, 오늘 ${dayLen(cur)}문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!</p>
     ${recordTable([cur])}
     <div class="btns"><button class="btn" id="home">처음 화면으로</button></div></section>`;
   $("home").addEventListener("click", renderHome);
@@ -421,12 +539,12 @@ function finishDay() {
 function recordTable(dayIdx) {
   const rows = [];
   dayIdx.forEach(k => state.plan[k].forEach((n, pos) => {
-    const r = state.days[k].res[n], q = QS[n - 1];
-    if (r !== true) rows.push(`<tr><td>Day ${k + 1} · ${pos + 1}번</td><td>${q.c} ${q.right}</td><td>${SEC[q.sec][0]}</td><td>${r === false ? "다시 생각하거나 함께 정답 봄" : "풀지 않음"}</td></tr>`);
+    const r = state.days[k].res[n], q = QS[n - 1], fz = (state.days[k].fast || {})[n] || 0;
+    if (r !== true || fz) rows.push(`<tr><td>${SETS[k]} · ${pos + 1}번</td><td>${q.c} ${q.right}</td><td>${SEC[q.sec][0]}</td><td>${r === true ? "처음에 맞힘" : r === false ? "다시 생각하거나 함께 정답 봄" : "풀지 않음"}</td><td>${fz ? fz + "번" : ""}</td></tr>`);
   }));
   return `<details><summary>보호자·선생님용 기록</summary>
-    <p class="note">처음 시도에서 맞히지 못한 문제입니다. 이 기록은 이 브라우저에만 남습니다.</p>
-    <div class="tbl"><table><thead><tr><th>날짜·순서</th><th>한자 · 뜻과 소리</th><th>묶음</th><th>상태</th></tr></thead><tbody>${rows.join("") || `<tr><td colspan="4">모든 문제를 처음에 맞혔어요.</td></tr>`}</tbody></table></div></details>`;
+    <p class="note">처음 시도에서 맞히지 못한 문제와 너무 빨리 누른 문제입니다. '빨리 누름'은 문제가 나오고 2.5초 안에 누른 횟수예요. 이 기록은 이 브라우저에만 남습니다.</p>
+    <div class="tbl"><table><thead><tr><th>섹션·순서</th><th>한자 · 뜻과 소리</th><th>묶음</th><th>상태</th><th>빨리 누름</th></tr></thead><tbody>${rows.join("") || `<tr><td colspan="5">모든 문제를 처음에 맞혔어요.</td></tr>`}</tbody></table></div></details>`;
 }
 
 function renderCelebrate() {
@@ -435,10 +553,10 @@ function renderCelebrate() {
   main.innerHTML = `<section class="card center celebrate">
     <div class="art">${TROPHY}${MASCOT("먹물 붓 친구가 축하하는 그림")}</div>
     <h2><span class="nw">축하해,</span> <span class="nw">${NAME}야!</span></h2>
-    <p class="q">5일 동안 한자 50자를 두 번씩, 100문제를 모두 풀었어! 이제 ${NAME}는 한자 박사야.</p>
-    <div class="badges">${state.plan.map((_, k) => `<span>Day ${k + 1} ✓</span>`).join("")}</div>
-    <p class="lead">처음에 바로 맞힌 문제: <b>${total} / 100</b></p>
-    ${recordTable([0, 1, 2, 3, 4])}
+    <p class="q">4A와 5A 한자 ${QS.length}문제를 모두 풀었어! 이제 ${NAME}는 한자 박사야.</p>
+    <div class="badges">${SETS.map(s => `<span>${s} ✓</span>`).join("")}</div>
+    <p class="lead">처음에 바로 맞힌 문제: <b>${total} / ${QS.length}</b></p>
+    ${recordTable(SETS.map((_, k) => k))}
     <div class="btns"><button class="btn" id="home">처음 화면으로</button><button class="btn soft" id="reset">처음부터 다시 시작</button></div></section>`;
   $("home").addEventListener("click", renderHome);
   $("reset").addEventListener("click", () => { state = fresh(); save(); renderHome(); });

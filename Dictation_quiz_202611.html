@@ -204,6 +204,11 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
   .pop .btn { min-height: 15vw; font-size: clamp(22px, 6.6vw, 52px); border-radius: 4vw; }
 }
 /* 받아쓰기 화면의 휴대폰 크기 (위 휴대폰 규칙 뒤에 둔다) */
+/* 너무 빨리 누를 때 잠깐 뜨는 알림 */
+.slow { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40; background: #FFF1F5; border: 3px solid #F9CFDC; color: #9E4A69; font-family: var(--display); font-size: clamp(20px, 5.6vw, 40px); padding: 12px 22px; border-radius: 99px; box-shadow: 0 6px 20px rgba(214, 140, 166, .3); opacity: 0; pointer-events: none; white-space: nowrap; }
+.slow.on { animation: slowNote 1.8s ease-out; }
+@keyframes slowNote { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
+
 @media (max-width: 560px), (orientation: portrait) {
   .lv-head { gap: 3.5vw; }
   .lv-head img { width: 24vw; height: 24vw; }
@@ -427,6 +432,42 @@ const dictScore = k => LEVELS[k].qs.filter((q, i) => norm(state.lv[k].dict.ans[i
 const lvDone = k => state.lv[k].mc.done && state.lv[k].dict.done;
 
 /* ---------- 첫 화면: 급수 고르기 ---------- */
+/* ---------- 찍기 방지 ----------
+   ② 문제가 나오고 WAIT_MS 안에 누르면 답을 받지 않고 "천천히" 알림을 띄운다(듣기 문제는 소리가 끝날 즈음부터 잰다).
+   ① 처음에 틀린 문제는 Day 끝에 순서와 보기를 바꿔 다시 낸다. 다시 풀기에서 한 번에 맞혀야 끝난다.
+   ⑤ 보호자 기록에 '빨리 누름'과 '다시 풀기' 횟수를 남긴다. */
+const WAIT_MS = 2500;
+let readyAt = 0;
+const armWait = (extra = 0) => { readyAt = Date.now() + WAIT_MS + extra; };
+function tooFast(bag, id, msg) {
+  if (Date.now() >= readyAt) return false;
+  bag.fast = bag.fast || {}; bag.fast[id] = (bag.fast[id] || 0) + 1; save();
+  let t = document.getElementById("slow");
+  if (!t) { t = document.createElement("div"); t.id = "slow"; t.className = "slow"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg || "🐢 천천히 읽고 골라 볼까?";
+  t.classList.remove("on"); void t.offsetWidth; t.classList.add("on");
+  return true;
+}
+const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const reshuffle = q => { const o = shuf(q.opts.map((_, i) => i)); return {...q, opts: o.map(i => q.opts[i]), ans: o.indexOf(q.ans)}; };
+const retryList = (bag, base) => [...base, ...(bag.extra || [])];
+const missOf = (bag, base) => base.filter(id => bag.res[id] !== true && !(bag.clear || {})[id]);
+const missLeft = (bag, base) => missOf(bag, base).length > 0;
+function addRetry(bag, base) {
+  const miss = missOf(bag, base);
+  if (!miss.length) return 0;
+  bag.extra = [...(bag.extra || []), ...shuf(miss)]; save();
+  return miss.length;
+}
+function clearIfFirst(bag, base, id) { if (bag.i >= base.length && tries === 1) { (bag.clear = bag.clear || {})[id] = true; save(); } }
+const timesRetried = (bag, id) => (bag.extra || []).filter(x => x === id).length;
+const countText = (bag, base, label) => bag.i >= base.length
+  ? `${label} · 다시 풀기 ${bag.i - base.length + 1} / ${bag.extra.length}`
+  : `${label} · ${bag.i + 1} / ${base.length}`;
+function retryIntro(n) {
+  popup("try", `${NAME}야, 처음에 틀린 문제를<br>한 번 더 풀어 볼까?`, `${n}문제가 다시 나와. 이번엔 천천히 읽고 한 번에 맞혀 보자! 한 번에 맞혀야 끝나.`, [["좋아, 해 볼게!", () => armWait()]]);
+}
+
 function renderHome() {
   closePopup(); cur = null;
   const firstOpen = LEVELS.findIndex((_, k) => !lvDone(k));
@@ -453,7 +494,7 @@ function renderHome() {
 function renderLevel(k) {
   closePopup(); cur = k;
   const L = LEVELS[k], s = state.lv[k];
-  const mcSub = s.mc.done ? `다 했어! 처음에 맞힌 문제 ${mcScore(k)}/10` : s.mc.i > 0 ? `${s.mc.i}/10 하는 중` : "10문제 · 빈칸에 알맞은 말 고르기";
+  const mcSub = s.mc.done ? `다 했어! 처음에 맞힌 문제 ${mcScore(k)}/10` : s.mc.i > 0 ? `${Math.min(s.mc.i, 10)}/10 하는 중` : "10문제 · 빈칸에 알맞은 말 고르기";
   const dSub = s.dict.done ? `다 했어! 정답 다시 보기` : s.dict.i > 0 ? `${s.dict.i}/10 하는 중` : "10문장 · 듣고 직접 쓰기";
   main.innerHTML = `<div class="top"><button class="link" id="home">← 급수 고르기</button></div>
     <section class="card">
@@ -469,13 +510,15 @@ function renderLevel(k) {
 /* ---------- 섹션 1: 빈칸 채우기 ---------- */
 function renderQ() {
   closePopup();
-  const m = state.lv[cur].mc;
-  if (m.i >= 10) return finishMc();
-  const q = LEVELS[cur].qs[m.i]; tries = 0;
-  main.innerHTML = `<div class="top"><button class="link" id="back">← ${LEVELS[cur].g}급</button><span class="count">빈칸 · ${m.i + 1} / 10</span></div>
-    <div class="bar" aria-hidden="true"><i style="width:${m.i * 10}%"></i></div>
-    <section class="card"><div class="sec">${LEVELS[cur].g}급 · ① 빈칸 채우기</div>
-      <p class="q"><span class="qnum">${m.i + 1}번</span>빈칸에 들어갈 바른 말을 골라 보세요.</p>
+  const m = state.lv[cur].mc, base = LEVELS[cur].qs.map(x => x.n);
+  let added = 0;
+  if (m.i >= retryList(m, base).length && !(added = addRetry(m, base))) return finishMc();
+  const re = m.i >= base.length;
+  const q0 = LEVELS[cur].qs[retryList(m, base)[m.i] - 1], q = re ? reshuffle(q0) : q0; tries = 0; armWait();
+  main.innerHTML = `<div class="top"><button class="link" id="back">← ${LEVELS[cur].g}급</button><span class="count">${countText(m, base, "빈칸")}</span></div>
+    <div class="bar" aria-hidden="true"><i style="width:${Math.min(100, m.i * 10)}%"></i></div>
+    <section class="card"><div class="sec">${re ? "🔁 다시 풀기 · " : ""}${LEVELS[cur].g}급 · ① 빈칸 채우기</div>
+      <p class="q"><span class="qnum">${re ? "다시" : m.i + 1 + "번"}</span>빈칸에 들어갈 바른 말을 골라 보세요.</p>
       <div class="box"><p class="sentence">${markBlank(q.s)}</p></div>
       <div class="opts" role="group" aria-label="빈칸에 들어갈 말 고르기">
         ${q.opts.map((o, x) => `<button class="opt" data-k="${x}"><span class="no">${x + 1}</span><span>${o}</span></button>`).join("")}
@@ -483,15 +526,17 @@ function renderQ() {
     </section>`;
   $("back").addEventListener("click", () => renderLevel(cur));
   main.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => choose(q, b)));
+  if (added) retryIntro(added);
 }
 
 function choose(q, btn) {
   if (btn.classList.contains("tried") || btn.classList.contains("right")) return;
   const x = Number(btn.dataset.k), res = state.lv[cur].mc.res;
+  if (tooFast(state.lv[cur].mc, q.n)) return;
   tries++;
   if (x === q.ans) {
     if (!(q.n in res)) res[q.n] = tries === 1;
-    save();
+    save(); clearIfFirst(state.lv[cur].mc, LEVELS[cur].qs.map(y => y.n), q.n);
     btn.classList.add("right");
     main.querySelectorAll(".opt").forEach(b => b.disabled = true);
     main.querySelector(".sentence").innerHTML = markFixed(q);
@@ -515,7 +560,7 @@ function showAnswer(q) {
 }
 
 function nextAction() {
-  const last = state.lv[cur].mc.i === 9;
+  const m = state.lv[cur].mc, b = LEVELS[cur].qs.map(y => y.n), last = m.i === retryList(m, b).length - 1 && !missLeft(m, b);
   return [last ? "빈칸 채우기 끝내기" : "다음 문제", () => { state.lv[cur].mc.i++; save(); renderQ(); window.scrollTo(0, 0); }];
 }
 
@@ -527,11 +572,24 @@ function finishMc() {
   main.innerHTML = `<section class="card center">
     <div class="sec">${L.g}급 · ① 빈칸 채우기 완료!</div>
     <div class="big">${s} / 10</div>
-    <p class="q">${NAME}야, 10문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!</p>
+    <p class="q">${NAME}야, 10문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${s}개야. 정말 잘했어!${state.lv[cur].mc.extra && state.lv[cur].mc.extra.length ? " 틀린 문제도 다시 풀어서 모두 맞혔어!" : ""}</p>
     ${miss.length ? `<p class="note">다시 보면 좋은 말: ${miss.map(q => q.right).join(", ")}</p>` : ""}
+    ${mcRecord(cur)}
     <div class="btns">${state.lv[cur].dict.done ? "" : `<button class="btn" id="go2">② 받아쓰기 하러 가기</button>`}<button class="btn soft" id="lv">${L.g}급 화면으로</button></div></section>`;
   if ($("go2")) $("go2").addEventListener("click", () => { renderDict(); window.scrollTo(0, 0); });
   $("lv").addEventListener("click", () => renderLevel(cur));
+}
+
+// 보호자·선생님용 기록 (① 빈칸 채우기)
+function mcRecord(k) {
+  const m = state.lv[k].mc;
+  const rows = LEVELS[k].qs.map((q, pos) => {
+    const r = m.res[q.n], fz = (m.fast || {})[q.n] || 0, rt = timesRetried(m, q.n);
+    return r === true && !fz ? "" : `<tr><td>${pos + 1}번</td><td>${q.right}</td><td>${r === true ? "처음에 맞힘" : r === false ? "다시 생각하거나 함께 정답 봄" : "풀지 않음"}</td><td>${fz ? fz + "번" : ""}</td><td>${rt ? rt + "번" : ""}</td></tr>`;
+  }).join("");
+  return `<details><summary>보호자·선생님용 기록</summary>
+    <p class="note">처음 시도에서 맞히지 못한 문제와 너무 빨리 누른 문제입니다. '빨리 누름'은 문제가 나오고 2.5초 안에 누른 횟수, '다시 풀기'는 끝에 다시 나온 횟수예요. 이 기록은 이 브라우저에만 남습니다.</p>
+    <div class="tbl"><table><thead><tr><th>순서</th><th>바른 말</th><th>상태</th><th>빨리 누름</th><th>다시 풀기</th></tr></thead><tbody>${rows || `<tr><td colspan="5">모든 문제를 처음에 맞혔어요.</td></tr>`}</tbody></table></div></details>`;
 }
 
 /* ---------- 섹션 2: 받아쓰기 (10문장을 다 쓰고 마지막에 정답 보기) ---------- */
