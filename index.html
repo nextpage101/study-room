@@ -241,7 +241,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
         <circle cx="60" cy="60" r="5" fill="#4A3448"/>
       </svg>
       <span class="name">시계 보기</span>
-      <span class="progress" id="p-clock">5일 · 50문제</span>
+      <span class="progress" id="p-clock">3일 · 45문제 (시계·달력)</span>
       <span class="go">시작하기</span>
     </a>
     <a class="subject math" href="Gugudan_quiz_202611.html">
@@ -294,13 +294,13 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
     `오늘은 <span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
 
   // 같은 주소(GitHub Pages)에 올리면 각 퀴즈의 진행 기록을 읽어 보여 준다
-  function show(key, id) {
+  function show(key, id, n = 5) {
     try {
       const s = JSON.parse(localStorage.getItem(key));
       if (!s || !s.days) return;
       const done = s.days.filter(x => x.done).length;
       const el = document.getElementById(id);
-      if (done === 5) el.innerHTML = "<b>5일 모두 끝!</b> 🎉";
+      if (done === n) el.innerHTML = `<b>${n}일 모두 끝!</b> 🎉`;
       else if (done > 0) el.innerHTML = `<b>Day ${done}</b>까지 했어요`;
     } catch (e) {}
   }
@@ -378,7 +378,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
         if (!s.party) { s.party = true; localStorage.setItem("study-today-v1", JSON.stringify(s)); setTimeout(party, 400); }
       } catch (e) { setTimeout(party, 400); }
     }
-  })();  show("clock-quiz-days-v1", "p-clock");
+  })();  show("clock-quiz-days-v1", "p-clock", 3);
   show("gugudan-quiz-days-v1", "p-gugu");
   show("hangul-quiz-days-v1", "p-kor");
   // 한자는 Day 대신 4A·5A 두 칸

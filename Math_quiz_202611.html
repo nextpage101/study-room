@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#E8F5FD">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
 <style>
-/* Layout: 첫 화면(환영 그림·시계·날짜·Day 카드) → 하루 10문제(한 화면에 한 문제) → 하루 완료 → 5일 모두 완료 시 축하 */
+/* Layout: 첫 화면(환영 그림·시계·날짜·Day 카드) → Day 1~3, 하루 15문제(한 화면에 한 문제) → 하루 완료 → 3일 모두 완료 시 축하 */
 :root {
   --bg: #E8F5FD; --card: #FFFFFF; --ink: #1E3A52; --muted: #56738D; --line: #CBE5F5;
   --accent: #2A84C4; --accent-ink: #FFFFFF; --sun: #7CC8F2; --sun-soft: #DDF0FC;
@@ -75,6 +75,16 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 }
 .choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .choices li { background: var(--sun-soft); border-radius: 12px; padding: 4px 12px; font-size: 18px; }
+.calbox { background: #FFFFFF; border: 3px solid var(--line); border-radius: 16px; padding: 10px; }
+.cal-t { font-family: var(--display); text-align: center; margin: 0 0 6px; font-size: 22px; color: var(--accent); }
+table.cal { width: 100%; border-collapse: collapse; table-layout: fixed; font-family: var(--display); font-size: 20px; }
+table.cal th, table.cal td { text-align: center; vertical-align: middle; padding: 6px 0; border: 1px solid var(--line); }
+table.cal th { background: var(--sun-soft); color: var(--ink); font-weight: 400; }
+table.cal .sun { color: #D9534F; } table.cal .sat { color: #3A7BD5; }
+.digital { display: inline-block; font-family: "Courier New", monospace; font-weight: 700; background: #2E3A4B; color: #9FF5C1; padding: 0 10px; border-radius: 8px; letter-spacing: .06em; }
+.ans-box { display: block; background: #FFFFFF; border: 3px solid var(--good); border-radius: 16px; padding: 10px 14px; margin: 0 0 12px; font-family: var(--display); font-size: 1.2em; color: var(--ink); line-height: 1.5; }
+.ans-box b { color: var(--good); font-size: 1.25em; }
+.ans-pick { font-size: .8em; color: var(--muted); }
 .clockbox { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .clockbox svg { width: 200px; max-width: 100%; height: auto; }
 .legend { display: flex; gap: 16px; font-size: 15px; color: var(--muted); flex-wrap: wrap; justify-content: center; }
@@ -149,6 +159,9 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
 @keyframes slowNote { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
 
 @media (max-width: 560px), (orientation: portrait) {
+  table.cal { font-size: clamp(16px, 4.8vw, 36px); }
+  table.cal th, table.cal td { padding: 1.6vw 0; }
+  .cal-t { font-size: clamp(18px, 5.4vw, 42px); }
   body { font-size: clamp(20px, 5.2vw, 42px); padding-block: 3vw 7vw; }
   .wrap { max-width: none; gap: 3.5vw; }
   .card { padding: 4.5vw; border-radius: 5vw; gap: 3.8vw; }
@@ -212,8 +225,15 @@ const SEC = {
   5: ["1시간은 몇 분일까요?", "시간과 분을 잘 바꾸었어!"],
   6: ["얼마나 걸렸을까요?", "걸린 시간을 차근차근 잘 구했어!"],
   7: ["오전과 오후, 하루", "오전과 오후, 하루를 잘 알고 있구나!"],
-  8: ["달력", "달력을 잘 알고 있구나!"]
+  8: ["달력", "달력을 잘 알고 있구나!"],
+  9: ["시계 응용", "어려웠던 시계 문제도 이제 척척이야!"],
+  10: ["달력 보기", "달력을 척척 읽는구나!"]
 };
+// 달력 그림: start = 1일의 요일(일요일 0 … 토요일 6)
+const CAL_SEP = {title: "어느 해의 9월", start: 2, days: 30};
+const CAL_DEC = {title: "2026년 12월", start: 2, days: 31};
+const WEEK = ["① 월", "② 화", "③ 수", "④ 목", "⑤ 금", "⑥ 토", "⑦ 일"];
+const dg = s => `<span class="digital">${s}</span>`;
 const T = (h, m) => [{a: h, s: "시"}, {a: m, s: "분"}];
 const M = m => [{a: m, s: "분"}];
 const HM = (h, m) => [{a: h, s: "시간"}, {a: m, s: "분"}];
@@ -271,16 +291,36 @@ const QS = [
   [8, "1주일은 며칠일까요?", one(7,"일"), "월요일부터 일요일까지 손가락으로 세어 볼까?"],
   [8, "2주일은 며칠일까요?", one(14,"일"), "7일이 두 번이면 얼마일까?"],
   [8, "1년은 몇 개월일까요?", one(12,"개월"), "1월부터 12월까지 같이 말해 볼까?"],
-  [8, "어느 달 5일이 월요일이에요. 같은 달 12일은 무슨 요일일까요? 번호를 써 보세요.", one(1,"번"), "5일에서 7일이 지나면 12일이야. 7일 뒤에는 어떤 요일이 다시 올까?", null, null, ["① 월","② 화","③ 수","④ 목","⑤ 금","⑥ 토","⑦ 일"]]
-].map(([sec, q, f, hint, clock, anyOrder, choices], i) => ({n: i + 1, sec, q, f, hint, clock, anyOrder, choices}));
+  [8, "어느 달 5일이 월요일이에요. 같은 달 12일은 무슨 요일일까요? 번호를 써 보세요.", one(1,"번"), "5일에서 7일이 지나면 12일이야. 7일 뒤에는 어떤 요일이 다시 올까?", null, null, ["① 월","② 화","③ 수","④ 목","⑤ 금","⑥ 토","⑦ 일"]],
+  // ---- 틀렸던 문제집 문제의 응용 (2026-11-25) ----
+  [9, `디지털시계가 ${dg("7:20")}을 나타내요. 시계의 긴바늘은 숫자 몇을 가리킬까요?`, one(4,"",'숫자'), "20분이 되려면 긴바늘이 5씩 몇 번 가야 할까? 5, 10, 15, 20!"],
+  [9, `디지털시계가 ${dg("3:45")}을 나타내요. 시계의 긴바늘은 숫자 몇을 가리킬까요?`, one(9,"",'숫자'), "45분은 5씩 몇 번일까? 손가락으로 5씩 세어 보자."],
+  [9, `디지털시계가 ${dg("4:50")}을 나타내요. 시계의 짧은바늘은 숫자 몇과 몇 사이에 있을까요?`, [{p:"숫자",a:4,s:"과(와)"},{a:5,s:"사이"}], "4시가 지났지만 아직 5시는 안 됐어. 짧은바늘은 어디쯤일까?", null, [0,1]],
+  [9, "잘못 말한 사람을 찾아 번호를 써 보세요.", one(3,"번"), "48분일 때 긴바늘은 어디에 있을까? 45분은 9, 50분은 10이야.", null, null, ["① 민지: 3시 15분일 때 긴바늘은 3을 가리켜.", "② 준호: 9시 52분일 때 긴바늘은 10과 11 사이를 가리켜.", "③ 하은: 2시 48분일 때 짧은바늘과 긴바늘이 모두 2와 3 사이를 가리켜."]],
+  [9, "잘못 말한 사람을 찾아 번호를 써 보세요.", one(1,"번"), "38분일 때 긴바늘은 어디일까? 35분은 7, 40분은 8이야.", null, null, ["① 서아: 12시 38분일 때 긴바늘은 6과 7 사이를 가리켜.", "② 도윤: 5시 20분일 때 긴바늘은 4를 가리켜.", "③ 유나: 10시 50분일 때 짧은바늘은 10과 11 사이를 가리켜."]],
+  [9, "잘못 말한 사람을 찾아 번호를 써 보세요.", one(2,"번"), "27분일 때 긴바늘은 어디일까? 25분은 5, 30분은 6이야.", null, null, ["① 시우: 6시 30분일 때 짧은바늘은 6과 7 사이를 가리켜.", "② 예린: 7시 27분일 때 긴바늘은 4와 5 사이를 가리켜.", "③ 건우: 11시 5분일 때 짧은바늘은 11과 12 사이를 가리켜."]],
+  [9, "시계가 나타내는 시각에 미술 수업을 시작해서 30분 동안 했어요. 수업이 끝난 시각은 몇 시 몇 분일까요?", T(9,20), "8시 50분에서 10분 더 가면 9시야. 남은 20분을 더하면?", [8,50]],
+  [9, "시계가 나타내는 시각에 수영을 시작해서 50분 동안 했어요. 수영이 끝난 시각은 몇 시 몇 분일까요?", T(3,25), "2시 35분에서 25분 더 가면 3시야. 50분 중에 남은 시간은?", [2,35]],
+  [9, "시계가 나타내는 시각에 피아노 연습을 시작해서 25분 동안 했어요. 연습이 끝난 시각은 몇 시 몇 분일까요?", T(11,10), "10시 45분에서 15분 더 가면 11시야. 25분 중에 남은 시간은?", [10,45]],
+  [9, "시계가 나타내는 시각에 블록 놀이를 시작해서 40분 동안 했어요. 놀이가 끝난 시각은 몇 시 몇 분일까요?", T(12,20), "11시 40분에서 20분 더 가면 12시야. 40분 중에 남은 20분을 더하면?", [11,40]],
+  [10, "12월 9일과 요일이 같은 날을 찾아 번호를 써 보세요.", one(2,"번"), "같은 요일은 7일마다 다시 와. 9에 7을 더하면 며칠일까?", null, null, ["① 12월 3일", "② 12월 16일", "③ 12월 19일", "④ 12월 29일"]],
+  [10, "10월 25일과 요일이 같은 날을 찾아 번호를 써 보세요.", one(1,"번"), "25에서 7을 빼고, 또 7을 빼 볼까? 같은 요일이 나와.", null, null, ["① 10월 11일", "② 10월 15일", "③ 10월 22일", "④ 10월 30일"]],
+  [10, "어느 달 3일이 수요일이에요. 같은 달 24일은 무슨 요일일까요? 번호를 써 보세요.", one(3,"번"), "3일에서 7일씩 뛰어 보자. 3일, 10일, 17일, 24일! 모두 같은 요일이야.", null, null, WEEK],
+  [10, "달력을 보세요. 9월의 셋째 목요일은 며칠일까요?", one(17,"일"), "목요일 칸을 위에서부터 첫째, 둘째, 셋째 세어 볼까?", null, null, null, CAL_SEP],
+  [10, "달력을 보세요. 9월에 일요일은 모두 몇 번 있을까요?", one(4,"번"), "빨간색 일요일 칸에 있는 날짜를 하나씩 세어 볼까?", null, null, null, CAL_SEP],
+  [10, "달력을 보세요. 9월 26일은 무슨 요일일까요? 번호를 써 보세요.", one(6,"번"), "26을 달력에서 찾아서 맨 위 요일 칸까지 올라가 봐!", null, null, WEEK, CAL_SEP],
+  [10, "달력을 보세요. 9월 30일에서 1주일 뒤는 몇 월 며칠일까요?", [{a:10,s:"월"},{a:7,s:"일"}], "9월은 30일까지 있어. 1주일은 7일이니까 다음 달로 넘어가!", null, null, null, CAL_SEP],
+  [10, "달력을 보세요. 12월 25일 크리스마스는 무슨 요일일까요? 번호를 써 보세요.", one(5,"번"), "25를 달력에서 찾아서 맨 위 요일 칸까지 올라가 봐!", null, null, WEEK, CAL_DEC],
+  [10, "달력을 보세요. 12월의 마지막 수요일은 며칠일까요?", one(30,"일"), "수요일 칸에서 맨 아래에 있는 날짜를 찾아볼까?", null, null, null, CAL_DEC],
+  [10, "달력을 보세요. 12월 31일의 다음 날은 몇 월 며칠일까요?", [{a:1,s:"월"},{a:1,s:"일"}], "12월이 끝나면 새해가 시작돼! 새해 첫 달 첫날은?", null, null, null, CAL_DEC]
+].map(([sec, q, f, hint, clock, anyOrder, choices, cal], i) => ({n: i + 1, sec, q, f, hint, clock, anyOrder, choices, cal}));
 
-// 하루 10문제. 원래 문제 번호로 적었고, 묶음이 고루 섞이도록 순서를 정했다.
+// Day 1~3, 하루 15문제(2026-11-25 연구자 요청). 새로 만든 20문제(51~70: 틀렸던 문제집 문제의 응용, 달력 보기)를 모두 넣고,
+// 기존 50문제 중 25문제를 묶음이 고루 섞이도록 골랐다. 고르지 않은 기존 문제는 QS에 남아 있지만 나오지 않는다.
 const DAYS = [
-  [1, 11, 19, 25, 31, 37, 43, 47, 2, 20],
-  [3, 12, 21, 26, 32, 38, 44, 4, 13, 28],
-  [5, 14, 22, 27, 33, 39, 45, 48, 6, 34],
-  [7, 15, 23, 29, 35, 40, 46, 49, 8, 16],
-  [9, 17, 24, 30, 36, 41, 50, 10, 18, 42]
+  [4, 51, 12, 20, 54, 25, 32, 57, 38, 58, 43, 47, 61, 64, 68],
+  [7, 52, 14, 22, 55, 28, 33, 39, 59, 45, 48, 62, 65, 66, 69],
+  [9, 16, 53, 23, 24, 56, 30, 35, 40, 60, 42, 50, 63, 67, 70]
 ];
 
 const CHEERS = [`${NAME}야, 정답이야!`, `와, ${NAME}야 맞았어!`, `딩동댕! ${NAME} 최고!`, `멋져, ${NAME}야!`];
@@ -291,7 +331,7 @@ let cur = null, tries = 0, clockTimer = null;
 const $ = id => document.getElementById(id);
 const main = $("main");
 
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.days && s.days.length === 5 ? s : null; } catch (e) { return null; } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.days && s.days.length === DAYS.length ? s : null; } catch (e) { return null; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
 function clockSVG(h, m, s, cls) {
@@ -409,7 +449,7 @@ function renderHome() {
   const allDone = firstOpen === -1;
   let cards = state.days.map((d, k) => {
     const score = DAYS[k].filter(n => d.res[n] === true).length;
-    const sub = d.done ? `다 했어! ${score}/10` : d.i > 0 ? `${Math.min(d.i, 10)}/10 하는 중` : "10문제";
+    const N = DAYS[k].length, sub = d.done ? `다 했어! ${score}/${N}` : d.i > 0 ? `${Math.min(d.i, N)}/${N} 하는 중` : `${N}문제`;
     return `<button class="day ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="Day ${k + 1}, ${sub}"><span class="d">Day ${k + 1}</span><span class="s">${sub}</span></button>`;
   }).join("");
   main.innerHTML = `
@@ -442,10 +482,11 @@ function renderQ() {
   const re = d.i >= base.length;
   const q = QS[retryList(d, base)[d.i] - 1]; tries = 0; armWait();
   let html = `<div class="top"><button class="link" id="home">← 처음 화면</button><span class="count">${countText(d, base, "Day " + (cur + 1))}</span></div>
-    <div class="bar" aria-hidden="true"><i style="width:${Math.min(100, d.i * 10)}%"></i></div>
+    <div class="bar" aria-hidden="true"><i style="width:${Math.min(100, d.i * 100 / base.length)}%"></i></div>
     <section class="card"><div class="sec">${re ? "🔁 다시 풀기 · " : ""}${SEC[q.sec][0]}</div>
     <p class="q"><span class="qnum">${re ? "다시" : d.i + 1 + "번"}</span>${q.q}</p>`;
   if (q.choices) html += `<ul class="choices">${q.choices.map(c => `<li>${c}</li>`).join("")}</ul>`;
+  if (q.cal) html += calHTML(q.cal);
   if (q.clock) html += `<div class="clockbox">${clockSVG(q.clock[0], q.clock[1])}<div class="legend"><span><b style="background:var(--hour)"></b>짧은바늘</span><span><b style="background:var(--minute)"></b>긴바늘</span></div></div>`;
   html += `<form id="f" class="answer" autocomplete="off">`;
   q.f.forEach((fd, k) => {
@@ -501,12 +542,24 @@ function check(q, ins) {
 }
 
 // 입력칸 이름: '몇 시', '몇 분'처럼 아이가 알아듣는 말로 부른다
+function calHTML(c) {
+  const W = "일월화수목금토", cls = w => w === 0 ? "sun" : w === 6 ? "sat" : "", cells = [];
+  for (let i = 0; i < c.start; i++) cells.push("<td></td>");
+  for (let d = 1; d <= c.days; d++) cells.push(`<td class="${cls((c.start + d - 1) % 7)}">${d}</td>`);
+  while (cells.length % 7) cells.push("<td></td>");
+  let rows = "";
+  for (let i = 0; i < cells.length; i += 7) rows += `<tr>${cells.slice(i, i + 7).join("")}</tr>`;
+  return `<div class="calbox"><p class="cal-t">${c.title}</p><table class="cal" aria-label="${c.title} 달력"><thead><tr>${[...W].map((w, i) => `<th class="${cls(i)}">${w}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
 function fieldName(q, k) {
   const f = q.f[k], p = f.p || "", s = f.s || "";
   if (q.anyOrder && q.anyOrder.includes(k)) return k === q.anyOrder[0] ? "짧은바늘 앞 숫자" : "짧은바늘 뒤 숫자";
   if (p.includes("짧은바늘")) return "짧은바늘";
   if (p.includes("긴바늘")) return "긴바늘";
   if (s.startsWith("번")) return "번호";
+  if (s.startsWith("월")) return "'몇 월'";
+  if (s.startsWith("일") && q.f.length > 1) return "'며칠'";
   if (s.startsWith("시간")) return "'몇 시간'";
   if (s.startsWith("시")) return "'몇 시'";
   if (s.startsWith("분")) return "'몇 분'";
@@ -521,13 +574,22 @@ function josa(word, withFinal, noFinal) {
   return (ch.charCodeAt(0) - 0xAC00) % 28 ? withFinal : noFinal;
 }
 
+// 같이 정답 볼 때 팝업에 보여 줄 정답 글자. 번호를 쓰는 문제는 그 보기 내용도 함께 보여 준다
+function answerText(q) {
+  const parts = q.f.map(fd => `${fd.p ? fd.p + " " : ""}<b>${fd.a}</b>${fd.s || ""}`);
+  let s = parts.join(" ").replace(/,\s*$/, "");
+  const pick = q.choices && q.f.find(fd => (fd.s || "").startsWith("번"));
+  if (pick && q.choices[pick.a - 1]) s += `<br><span class="ans-pick">${q.choices[pick.a - 1]}</span>`;
+  return s;
+}
+
 function showAnswer(q, ins) {
   const res = state.days[cur].res;
   if (!(q.n in res)) res[q.n] = false;
   save();
   ins.forEach((el, k) => { el.value = q.f[k].a; el.classList.remove("again"); el.classList.add("ok"); el.readOnly = true; });
   $("btns").innerHTML = "";
-  popup("good", `${NAME}야, 같이 정답을 봐요`, `입력칸에 정답을 넣어 두었어. 천천히 읽어 보자. 다음에 비슷한 문제가 나오면 ${NAME}는 분명 풀 수 있을 거야!`, [nextAction()]);
+  popup("good", `${NAME}야, 같이 정답을 봐요`, `<span class="ans-box">정답: ${answerText(q)}</span>${q.hint}<br>다음에 비슷한 문제가 나오면 ${NAME}는 분명 풀 수 있을 거야!`, [nextAction()]);
 }
 
 function nextAction() {
@@ -561,8 +623,8 @@ function finishDay() {
   const score = DAYS[cur].filter(n => d.res[n] === true).length;
   main.innerHTML = `<section class="card center">
     <div class="sec">Day ${cur + 1} 완료!</div>
-    <div class="big">${score} / 10</div>
-    <p class="q">${NAME}야, 오늘 10문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${score}개야. 정말 잘했어!${d.extra && d.extra.length ? " 틀린 문제도 다시 풀어서 모두 맞혔어!" : ""}</p>
+    <div class="big">${score} / ${DAYS[cur].length}</div>
+    <p class="q">${NAME}야, 오늘 ${DAYS[cur].length}문제를 끝까지 다 풀었어! 처음에 바로 맞힌 문제가 ${score}개야. 정말 잘했어!${d.extra && d.extra.length ? " 틀린 문제도 다시 풀어서 모두 맞혔어!" : ""}</p>
     ${record([cur])}
     <div class="btns"><button class="btn" id="home">처음 화면으로</button></div></section>`;
   $("home").addEventListener("click", renderHome);
@@ -585,10 +647,10 @@ function renderCelebrate() {
   main.innerHTML = `<section class="card center celebrate">
     <div class="art">${TROPHY}${MASCOT("풍선을 들고 축하하는 시나모롤")}</div>
     <h2><span class="nw">축하해,</span> <span class="nw">${NAME}야!</span></h2>
-    <p class="q">5일 동안 시계 문제 50개를 모두 풀었어! 이제 ${NAME}는 시계 읽기 박사야.</p>
+    <p class="q">${DAYS.length}일 동안 시계·달력 문제 ${DAYS.flat().length}개를 모두 풀었어! 이제 ${NAME}는 시계 읽기 박사야.</p>
     <div class="badges">${DAYS.map((_, k) => `<span>Day ${k + 1} ✓</span>`).join("")}</div>
-    <p class="lead">처음에 바로 맞힌 문제: <b>${total} / 50</b></p>
-    ${record([0, 1, 2, 3, 4])}
+    <p class="lead">처음에 바로 맞힌 문제: <b>${total} / ${DAYS.flat().length}</b></p>
+    ${record(DAYS.map((_, k) => k))}
     <div class="btns"><button class="btn" id="home">처음 화면으로</button><button class="btn soft" id="reset">처음부터 다시 시작</button></div></section>`;
   $("home").addEventListener("click", renderHome);
   $("reset").addEventListener("click", () => { state = fresh(); save(); renderHome(); });

@@ -75,6 +75,9 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 }
 .choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .choices li { background: var(--sun-soft); border-radius: 12px; padding: 4px 12px; font-size: 18px; }
+.ans-box { display: block; background: #FFFFFF; border: 3px solid var(--good); border-radius: 16px; padding: 10px 14px; margin: 0 0 12px; font-family: var(--display); font-size: 1.2em; color: var(--ink); line-height: 1.5; }
+.ans-box b { color: var(--good); font-size: 1.25em; }
+.ans-pick { font-size: .8em; color: var(--muted); }
 .clockbox { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .clockbox svg { width: 200px; max-width: 100%; height: auto; }
 .legend { display: flex; gap: 16px; font-size: 15px; color: var(--muted); flex-wrap: wrap; justify-content: center; }
@@ -491,13 +494,22 @@ function josa(word, withFinal, noFinal) {
   return (ch.charCodeAt(0) - 0xAC00) % 28 ? withFinal : noFinal;
 }
 
+// 같이 정답 볼 때 팝업에 보여 줄 정답 글자. 번호를 쓰는 문제는 그 보기 내용도 함께 보여 준다
+function answerText(q) {
+  const parts = q.f.map(fd => `${fd.p ? fd.p + " " : ""}<b>${fd.a}</b>${fd.s || ""}`);
+  let s = parts.join(" ").replace(/,\s*$/, "");
+  const pick = q.choices && q.f.find(fd => (fd.s || "").startsWith("번"));
+  if (pick && q.choices[pick.a - 1]) s += `<br><span class="ans-pick">${q.choices[pick.a - 1]}</span>`;
+  return s;
+}
+
 function showAnswer(q, ins) {
   const res = state.days[cur].res;
   if (!(q.n in res)) res[q.n] = false;
   save();
   ins.forEach((el, k) => { el.value = q.f[k].a; el.classList.remove("again"); el.classList.add("ok"); el.readOnly = true; });
   $("btns").innerHTML = "";
-  popup("good", `${NAME}야, 같이 정답을 봐요`, `입력칸에 정답을 넣어 두었어. 천천히 읽어 보자. 다음에 비슷한 문제가 나오면 ${NAME}는 분명 풀 수 있을 거야!`, [nextAction()]);
+  popup("good", `${NAME}야, 같이 정답을 봐요`, `<span class="ans-box">정답: ${answerText(q)}</span>${q.hint}<br>다음에 비슷한 문제가 나오면 ${NAME}는 분명 풀 수 있을 거야!`, [nextAction()]);
 }
 
 function nextAction() {
