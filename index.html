@@ -280,7 +280,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
         <path d="M100 12 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#C7B6F2"/>
       </svg>
       <span class="name">단어</span>
-      <span class="progress" id="p-word">20문제 + 최종 평가</span>
+      <span class="progress" id="p-word">Week 1~12 · 20단어씩</span>
       <span class="go">시작하기</span>
     </a>
   </nav>
@@ -400,14 +400,11 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
       else if (done > 0) el.innerHTML = `<b>${done}개 급수</b> 끝냈어요`;
     }
   } catch (e) {}
-  // 단어 퀴즈: 오늘의 단어(20문제) + 최종 평가
+  // 단어 퀴즈: Week 1~12, Week마다 오늘의 단어 + 최종 평가
   try {
-    const s = JSON.parse(localStorage.getItem("word-quiz-week12-v2"));
-    if (s && s.days) {
-      const el = document.getElementById("p-word");
-      if (s.days[1] && s.days[1].done) el.innerHTML = "<b>최종 평가 끝!</b> 🎉";
-      else if (s.days[0] && s.days[0].done) el.innerHTML = "<b>최종 평가</b>만 남았어요";
-    }
+    let fin = 0;
+    for (let n = 1; n <= 12; n++) { const s = JSON.parse(localStorage.getItem("word-quiz-week" + n + "-v2")); if (s && s.days && s.days.every(d => d.done)) fin++; }
+    if (fin) document.getElementById("p-word").innerHTML = fin === 12 ? "<b>12주 모두 끝!</b> 🎉" : `<b>Week ${fin}개</b> 끝냈어요`;
   } catch (e) {}})();
 </script>
 </body>

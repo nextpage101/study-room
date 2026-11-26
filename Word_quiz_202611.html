@@ -164,12 +164,14 @@ td.en { font-family: var(--en); font-weight: 700; }
 /* 휴대폰(세로 화면 또는 좁은 화면): 화면 폭에 비례해 크기를 정한다. 반드시 스타일 맨 끝에 둔다. */
 /* 칸이 2개(오늘의 단어 · 최종 평가)라 반씩 넓게 */
 .days .day { width: 47%; }
+.days.weeks .day { width: calc((100% - 20px) / 3); }
 /* 너무 빨리 누를 때 잠깐 뜨는 알림 */
 .slow { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40; background: #FFF1F5; border: 3px solid #F9CFDC; color: #9E4A69; font-family: var(--display); font-size: clamp(20px, 5.6vw, 40px); padding: 12px 22px; border-radius: 99px; box-shadow: 0 6px 20px rgba(214, 140, 166, .3); opacity: 0; pointer-events: none; white-space: nowrap; }
 .slow.on { animation: slowNote 1.8s ease-out; }
 @keyframes slowNote { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
 
 @media (max-width: 560px), (orientation: portrait) {
+  .days.weeks .day { width: calc((100% - 5.2vw) / 3); }
   body { font-size: clamp(20px, 5.2vw, 42px); padding-top: calc(3vw + env(safe-area-inset-top, 0px)); }
   .wrap { max-width: none; gap: 3.5vw; }
   .card { padding: 4.5vw; border-radius: 5vw; gap: 3.8vw; }
@@ -225,8 +227,255 @@ const NAME = "지호";
 const MASCOT_SRC = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAFoAWgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoooo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AS6jKQscEfzMGPQt6n2q7ol14j+Jl42n+E9NaG2Xh9QuBtRFPcf4DNe5/C39n/R/AEq6jdOdX10jLXs4yEP+wD0+vWuKM6dBOODfNN7zf6HZ7OpXkpYtcsFtBfqUPgB8IZ/Benza7rS7/EWojL7uTAh52/7x7/lXs46UijAp1TTpqnGyN5zc5czCiiitSAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKQjNLRSsBHLAk0ZR1DKeoYZBrhPFPwO8GeLT5l7okEc//AD1tf3Tf+O9a7+kxmolTjJWauVGUo6xdj5K+MPwCh+GXha517RNbv/JhkUG0lOQAxxncP8K4/SLLx3Hptte2ssV/bzoJEWRgWx6HNfYHxE8JxeN/CGpaLNkLdRFVYHGHHKn8wK+UPB/jv/hF/O8O+Jy9leWDmFHkXjA7H+h71wK9CskpuMWu/U9jC06GLg41optd0Zlz468UaZeR215oiieT7kag7nx1x1zTJfif5XF9oDxk9dw4z+IpPEnxA07UfHWj3kEzJY6eW3Thfv567RW5Y6fqHx08VaVaabp88Wg2swe5upFwmMjPPTOMgD3p/wBo4i8lTq3d7bXHUynAxTk4Wt2djEHxH0oAGbw7IpP8RiT/AAqRviVpEa5XQ5Rj/pkoH8q+1F8O6cY0RrC2dEAVd8KnAHTtQ/h7TnDK1halSMEeSvI/KvQWIxiWko/+Ao8F4bCPeL/8CZ8WD4tW3Sz0eZm74x/QVCnxM1nUrv7JYaMPtOMlHJJA9SOMV6/4r/ZZuIdRudQ8H6y+mNMxY2cudgzzhWHQfWsbRf2QNVlIuNV8SC3uJCfNW0jLkqeo3EjJrhljczcrJ29EkehTwGVJczV35tnnnh648X+OfGtt4cgvIrK5myWMKhlhUDJJIz/k17t4X/ZY0G0uVvPEN7c+IrwHLCVtkWfTaOo/Gu2+G/wb8P8AwzjL6bC81867ZL24O6Vx6ew9hXeBQO1XCnVqK+Jk5PzZnOVKm7YaKivQq6dpdrpVpFbWlvHbW8YCpHEoVQPoKtYFLRXYklojmCiiimAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAIVDdRmuW8XfDLw344jZdY0qC5cjAmC7ZR9GHNdVRUSgpaNFKTi7xZ53oHwE8EeHo9kGhQXDE5Ml3mV/zNd1ZabbafbrBbQRW8S9I4UCKPwFWqKmNKEPhQ5TlL4mFJjNLRWpAmBRS0UAJiloooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//2Q==";
 const MASCOT = (alt, extra) => `<img class="mascot ${extra || ""}" src="${MASCOT_SRC}" alt="${alt}" width="260" height="260">`;
 
+// Vocabulary List Week 1~11 (연구자 제공 교재 PDF). [영어, 한글 뜻, 교재 예문]
+// 교재에서 고친 곳: Week 1의 9번은 교재에 send로 인쇄되었지만 뜻·예문(모래, I play with sand.)대로 sand로 넣음.
+// Week 6 look for 예문은 연습 페이지 문장, 잘린 예문 5개(Week 7 tree, Week 9 first, Week 10 finally·rabbit, Week 11 beach)도 연습 페이지에서 가져옴.
+const WEEKS = {
+  1: [
+    ["helmet", "헬멧", "I wear a helmet on my bike."],
+    ["breathe", "숨 쉬다", "We breathe in and out."],
+    ["underwater", "물 속의, 수중의", "Fish live underwater."],
+    ["floor", "바닥", "The floor is clean."],
+    ["coral", "산호", "The coral is pink."],
+    ["mermaid", "인어", "The mermaid swims fast."],
+    ["put on", "입다, 착용하다", "I put on my coat."],
+    ["inside", "~안에", "The cat is inside the box."],
+    ["sand", "모래", "I play with sand."],
+    ["stay", "머무르다, 계속 있다", "Please stay here."],
+    ["rain", "비", "It is raining outside."],
+    ["frost", "서리", "I see frost on the window."],
+    ["sunny", "맑은, 화창한", "It is a sunny day today."],
+    ["cloud", "구름", "The cloud looks like a rabbit."],
+    ["fog", "안개", "The fog makes everything look white."],
+    ["hurricane", "허리케인, 큰 폭풍", "The hurricane is very strong."],
+    ["rainbow", "무지개", "I see a rainbow in the sky."],
+    ["tornado", "회오리바람", "The tornado spins very fast."],
+    ["snowfall", "적설, 눈이 내림", "The snowfall covered the ground."],
+    ["thunder", "천둥", "The thunder is very loud."]
+  ],
+  2: [
+    ["lantern", "랜턴, 손전등", "I use a lantern at night."],
+    ["light", "빛", "The light is very bright."],
+    ["fin", "지느러미", "The fish moves its fin."],
+    ["welcome", "맞이하다, 환영하다", "We welcome our friends."],
+    ["sea", "바다", "The sea is blue."],
+    ["special", "특별한, 특정한", "Today is a special day."],
+    ["help", "도와주다", "I help my friend."],
+    ["hide", "숨다, 감추다", "I hide behind the tree."],
+    ["ear", "귀", "My ear can hear music."],
+    ["swim", "수영하다", "I can swim fast."],
+    ["shovel", "삽", "I use a shovel to dig."],
+    ["wheelbarrow", "손수레", "I push the wheelbarrow."],
+    ["ax", "도끼", "He cuts wood with an ax."],
+    ["plow", "쟁기", "The farmer uses a plow."],
+    ["weed", "잡초", "I pull out a weed."],
+    ["soil", "흙", "The soil is soft."],
+    ["seed", "씨, 씨앗", "I plant a seed."],
+    ["hole", "구멍", "There is a hole in the yard."],
+    ["field", "들판", "We run in the field."],
+    ["fill", "채우다", "I fill the cup with water."]
+  ],
+  3: [
+    ["bright", "밝은, 빛나는", "The room is bright."],
+    ["shallow", "얕은, 얄팍한", "The water is shallow."],
+    ["wave", "파도, 물결", "The wave is big."],
+    ["dirty", "더러운", "My shoes are dirty."],
+    ["poison", "독, 독약", "The poison is not safe."],
+    ["always", "항상, 언제나", "I always brush my teeth."],
+    ["different", "다른, 차이가 나는", "The two bags are different."],
+    ["sometimes", "때때로, 가끔", "I sometimes read at night."],
+    ["move", "움직이다, 옮기다", "I move the chair."],
+    ["plant", "식물, 나무", "The plant is green."],
+    ["ash", "재", "The ash is soft and gray."],
+    ["canyon", "가파른 협곡", "The canyon is very wide."],
+    ["forest", "숲, 삼림", "We walked through the quiet forest."],
+    ["cliff", "절벽", "The bird built its nest on the cliff."],
+    ["island", "섬", "I want to visit a small island during summer vacation."],
+    ["nature", "자연", "Nature is beautiful."],
+    ["prairie", "대초원", "Many animals live on the prairie."],
+    ["tip", "끝부분, 조언", "The tip of the pencil is very sharp."],
+    ["valley", "골짜기, 계곡", "The valley has a river."],
+    ["mountain", "산", "We can see a big mountain from our school."]
+  ],
+  4: [
+    ["river", "강", "The river flows fast."],
+    ["ocean", "바다, 대양", "The ocean is deep and blue."],
+    ["lake", "호수", "The lake is very calm."],
+    ["puddle", "웅덩이", "I jump in the puddle."],
+    ["dew", "이슬", "Dew is on the grass."],
+    ["hose", "호스", "I water plants with a hose."],
+    ["leak", "새다, 누출되다", "The bottle leaks water."],
+    ["ice", "얼음", "The ice is very cold."],
+    ["float", "뜨다, 떠다니다", "The leaf can float."],
+    ["overflow", "넘치다", "The cup overflows with milk."],
+    ["blame", "탓하다, 비난하다", "Don't blame your friend."],
+    ["slap", "때리다, 철썩 치다", "He slaps the table."],
+    ["wicked", "못된, 사악한", "The wicked witch laughs."],
+    ["cheat", "속이다, 부정하다", "It is wrong to cheat."],
+    ["grab", "잡다, 움켜쥐다", "I grab the ball."],
+    ["greedy", "욕심 많은", "The greedy boy takes all the cookies."],
+    ["mean", "못된, 심술궂은", "The boy is mean to his friend."],
+    ["nasty", "불쾌한, 못된", "That was a nasty trick."],
+    ["pest", "해충, 성가신 것", "A fly is a pest."],
+    ["tease", "놀리다, 괴롭히다", "Don't tease your friend."]
+  ],
+  5: [
+    ["world", "세계", "The world is big."],
+    ["between", "사이에, 중간에", "The cat is between the chairs."],
+    ["hot spring", "온천", "We relax in the hot spring."],
+    ["winter", "겨울", "Winter is very cold."],
+    ["rise", "오르다, 뜨다", "The sun will rise soon."],
+    ["live", "살다", "I live in Korea."],
+    ["many", "많은", "Many stars shine in the sky."],
+    ["set", "놓다", "I set the cup on the table."],
+    ["dark", "어두운, 캄캄한", "The room is dark."],
+    ["ice", "얼음", "The ice is very cold."],
+    ["rough", "거친, 울퉁불퉁한", "The rock feels rough."],
+    ["arrive", "도착하다", "We arrive at school early."],
+    ["baggage", "짐, 수하물", "My baggage is heavy."],
+    ["travel", "여행하다", "I travel with my family."],
+    ["tour", "여행, 관광", "We go on a city tour."],
+    ["sink", "가라앉다, 내려앉다", "The stone will sink in water."],
+    ["mile", "마일(거리 단위)", "The park is one mile away."],
+    ["passenger", "승객", "The passenger sits quietly."],
+    ["prepare", "준비하다", "I prepare my bag."],
+    ["rest", "쉬다", "We rest after playing."]
+  ],
+  6: [
+    ["rich", "부유한, 부자인", "The rich man helps others."],
+    ["flood", "홍수", "The flood covers the road."],
+    ["sink", "가라앉다", "The boat will sink slowly."],
+    ["look for", "찾다, 구하다", "I look for help from my teacher."],
+    ["city", "도시", "Seoul is a big city."],
+    ["story", "이야기", "I read a fun story."],
+    ["island", "섬", "We visit a small island."],
+    ["really", "진짜로, 실제로", "I really like this game."],
+    ["find", "찾다, 발견하다", "I find my lost pencil."],
+    ["picture", "그림, 사진", "I draw a picture of a cat."],
+    ["adjust", "조절하다, 맞추다", "I adjust my chair."],
+    ["champion", "챔피언, 우승자", "She is the champion."],
+    ["advance", "발전하다, 나아가다", "You advance to the next level."],
+    ["gain", "얻다, 늘리다", "I gain new skills."],
+    ["glory", "영광, 명예", "The team wins glory."],
+    ["repeat", "반복하다, 다시 말하다", "Please repeat the word."],
+    ["contest", "대회, 시합", "I join a singing contest."],
+    ["effort", "노력", "Your effort is great."],
+    ["almost", "거의, 대부분", "I am almost done."],
+    ["finally", "마침내, 결국", "We finally finish the work."]
+  ],
+  7: [
+    ["forest", "숲, 삼림", "The forest is full of trees."],
+    ["feather", "깃털", "The feather is soft."],
+    ["swamp", "늪, 습지", "The frog lives in the swamp."],
+    ["large", "(규모가) 큰", "The elephant is large."],
+    ["hunt", "사냥하다", "The tiger hunts at night."],
+    ["live", "살다", "I live in a small town."],
+    ["bright", "밝은, 눈부신", "The sun is very bright."],
+    ["different", "다른", "These two apples look different."],
+    ["climb", "오르다, 올라가다", "I climb the tree."],
+    ["tree", "나무", "The tree has green leaves."],
+    ["bent", "구부러진, 휜", "The bent branch looks funny."],
+    ["giant", "거인, 거대한", "The giant watermelon is huge."],
+    ["wide", "넓은, 폭이 큰", "The river is wide."],
+    ["spiral", "나선, 소용돌이 모양", "The shell has a spiral shape."],
+    ["heavy", "무거운", "The box is heavy."],
+    ["straight", "곧은, 똑바른", "The line is straight."],
+    ["thin", "얇은, 가는", "The paper is thin."],
+    ["curve", "곡선, 구부리다", "The road makes a curve."],
+    ["tiny", "아주 작은", "The tiny bug is on the leaf."],
+    ["flat", "평평한, 납작한", "The table is flat."]
+  ],
+  8: [
+    ["accident", "사고", "I had a small accident."],
+    ["heal", "낫다, 치유하다", "The cut will heal soon."],
+    ["ache", "아픔, 아프다", "My tooth aches."],
+    ["fever", "열, 발열", "She has a fever."],
+    ["scratch", "긁다, 할퀴다", "I scratch my arm."],
+    ["pain", "통증, 아픔", "The pain is strong."],
+    ["medicine", "약, 약품", "I take medicine."],
+    ["harm", "해, 해치다", "Don't harm the animal."],
+    ["shiver", "떨다, 몸서리치다", "I shiver in the cold."],
+    ["pale", "창백한, 핼쑥한", "She looks pale today."],
+    ["on", "~위에, ~에", "The book is on the table."],
+    ["along", "~를 따라서", "We walk along the river."],
+    ["inside", "안에, 내부에", "The cat is inside the box."],
+    ["without", "~없이", "I can't go without my bag."],
+    ["outside", "밖에, 외부에", "The kids play outside."],
+    ["above", "~위에, ~보다 위에", "The bird flies above the tree."],
+    ["below", "아래에", "The shoes are below the bed."],
+    ["among", "~사이에(셋 이상)", "The boy sits among his friends."],
+    ["beyond", "~저편에, 너머에", "The village is beyond the hill."],
+    ["through", "~를 통과하여", "We walk through the door."]
+  ],
+  9: [
+    ["famous", "잘 알려진, 유명한", "The famous singer is on TV."],
+    ["inventor", "발명가", "The inventor made a new robot."],
+    ["machine", "기계", "The machine helps us work."],
+    ["build", "짓다, 건설하다", "They build a new house."],
+    ["early", "초창기의, 이른", "He comes to school early."],
+    ["fly", "날다", "Birds fly in the sky."],
+    ["draw", "그리다", "I draw a cat."],
+    ["wing", "날개", "The bird spreads its wings."],
+    ["engine", "엔진, 기관차", "The engine is very loud."],
+    ["first", "첫째의, 첫번째", "This is my first day here."],
+    ["hide", "숨다, 숨기다", "I hide behind the door."],
+    ["howl", "울부짖다", "The dog howls at night."],
+    ["blanket", "담요", "I use a blanket to stay warm."],
+    ["alarm", "경보, 알람", "The alarm rings in the morning."],
+    ["nightmare", "악몽", "I wake up from a nightmare."],
+    ["monster", "괴물, 몬스터", "The monster in the story is big."],
+    ["smoke", "연기, 연기가 나다", "Smoke comes from the chimney."],
+    ["nothing", "아무것도 ~ 아니다", "There is nothing in the box."],
+    ["alley", "골목, 좁은 길", "The cat walks down the alley."],
+    ["cover", "덮다, 가리다", "I cover my head with a hat."]
+  ],
+  10: [
+    ["blow", "(바람이, 입으로) 불다", "I blow the balloon."],
+    ["pilot", "조종사, 비행사", "The pilot flies the plane."],
+    ["turn on", "켜다", "I turn on the light."],
+    ["forward", "앞으로", "The car moves forward."],
+    ["take off", "이륙하다, 날아오르다", "The airplane will take off soon."],
+    ["paper", "종이", "I write on the paper."],
+    ["top", "꼭대기, 정상", "I stand on the top of the hill."],
+    ["happen", "발생하다, 일어나다", "What will happen next?"],
+    ["move", "움직이다, 옮기다", "I move the chair."],
+    ["finally", "마침내, 마지막으로", "We finally finish our work."],
+    ["crab", "게", "The crab walks sideways."],
+    ["chipmunk", "다람쥐과의 작은 동물, 칩멍크", "The chipmunk eats nuts."],
+    ["caterpillar", "애벌레", "The caterpillar crawls slowly."],
+    ["beaver", "비버", "The beaver builds a lodge."],
+    ["dove", "비둘기", "The dove flies gently."],
+    ["ape", "유인원(고릴라, 침팬지 등)", "The ape climbs trees."],
+    ["butterfly", "나비", "The butterfly has bright wings."],
+    ["turtle", "거북이", "The turtle moves slowly."],
+    ["penguin", "펭귄", "The penguin waddles on the ice."],
+    ["rabbit", "토끼", "The rabbit eats carrots."]
+  ],
+  11: [
+    ["tour", "여행, 관광", "We go on a tour of the city."],
+    ["shout", "외치다, 소리지르다", "I shout to my friend."],
+    ["seat belt", "안전띠, 안전벨트", "Please wear your seat belt."],
+    ["volcano", "화산", "The volcano erupts fire."],
+    ["splash", "끼얹다, 후두둑 떨어지다", "I splash water in the pool."],
+    ["fasten", "매다, 채우다", "Fasten your seat belt tightly."],
+    ["land", "착륙하다, 내려앉다", "The plane will land soon."],
+    ["left", "왼쪽의", "The door is on the left."],
+    ["right", "오른쪽의", "The window is on the right."],
+    ["beach", "해변, 바닷가", "We play at the beach."],
+    ["ceiling", "천장", "The ceiling is white."],
+    ["cellar", "지하실, 저장고", "We keep old boxes in the cellar."],
+    ["dining room", "식당", "We eat dinner in the dining room."],
+    ["nursery", "아기 방, 놀이방", "The toys are in the nursery."],
+    ["roof", "지붕", "The roof keeps out the rain."],
+    ["chimney", "굴뚝", "Smoke comes from the chimney."],
+    ["garage", "차고, 차량 보관소", "The car is in the garage."],
+    ["cupboard", "찬장, 장롱", "Plates are in the cupboard."],
+    ["porch", "현관, 포치", "We sit on the porch."],
+    ["stairs", "계단", "I walk up the stairs."]
+  ]
+};
 // Vocabulary List – Week 12 (연구자 제공). [영어, 한글 뜻, 틀렸을 때 힌트]
-const WORDS = [
+WEEKS[12] = [
   ["hook", "갈고리, 걸이", "모자나 옷을 걸어 두는 곳이야."],
   ["knob", "손잡이, 노브", "문을 열 때 돌리는 동그란 거야."],
   ["rope", "로프, 밧줄", "굵고 튼튼한 줄이야."],
@@ -248,15 +497,27 @@ const WORDS = [
   ["dash", "돌진하다, 빠르게 달리다", "결승선까지 쌩 달려갈 때 써."],
   ["roll", "굴리다, 구르다", "공을 바닥에 굴릴 때 써."]
 ];
-const GROUP = w => w < 10 ? "📦 물건 단어" : "🏃 움직임 단어";
+const WEEK_NUMS = Object.keys(WEEKS).map(Number).sort((a, b) => a - b);
+let W = 12, WORDS = WEEKS[12];
+const GROUP = w => W === 12 ? (w < 10 ? "📦 물건 단어" : "🏃 움직임 단어") : (w < 10 ? "📘 단어 1~10" : "📗 단어 11~20");
 const MODE = {
   en: ["m-en", "영어 → 뜻"],
   ko: ["m-ko", "뜻 → 영어"],
   sp: ["m-sp", "✏️ 듣고 쓰기"]
 };
 const PERMS = [[0,1,2],[1,0,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0]];
-// 보기: 같은 묶음 안의 다른 단어 2개 (뜻이 비슷한 tumble·roll은 서로 보기로 나오지 않게 배치)
-function others(w) { const g = w < 10 ? 0 : 10, k = w - g; return [g + (k + 3) % 10, g + (k + 6) % 10]; }
+// 보기: 같은 묶음(1~10번, 11~20번) 안의 다른 단어 2개. 한글 뜻이 겹치는 단어(예: 못된·심술궂은 / 못된·사악한)는 함께 내지 않는다
+const koParts = s => s.replace(/\(.*?\)/g, "").split(/[,·]/).map(x => x.replace(/[~\s]/g, "")).filter(Boolean);
+const clash = (a, b) => WORDS[a][0] === WORDS[b][0] || koParts(WORDS[a][1]).some(x => koParts(WORDS[b][1]).includes(x));
+function others(w) {
+  const g = w < 10 ? 0 : 10, k = w - g, picks = [];
+  for (const step of [3, 6, 1, 2, 4, 5, 7, 8, 9]) {
+    const c = g + (k + step) % 10;
+    if (!clash(c, w) && picks.every(p => !clash(p, c))) picks.push(c);
+    if (picks.length === 2) break;
+  }
+  return picks;
+}
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 // 오늘의 단어: 20단어를 한 번씩, 순서는 무작위. 영어 → 뜻 10문제, 뜻 → 영어 10문제가 섞여 나온다
 function makePractice() {
@@ -269,8 +530,12 @@ const FINAL_Q = FINAL.map(w => ({type: "sp", w}));
 let DAYS = [];
 const syncDays = () => { DAYS = [state.practice, FINAL_Q]; };
 const LABEL = k => k === 0 ? "오늘의 단어" : "최종 평가";
-const CHEERS = [`${NAME}야, 정답이야!`, `와, ${NAME}야 맞았어!`, `딩동댕! ${NAME} 최고!`, `멋져, ${NAME}야!`];
-const KEY = "word-quiz-week12-v2";
+// 피드백 멘트: 맞혔을 때·틀렸을 때 재미있는 말 여러 가지 중 하나를 고른다(틀렸을 때도 아이를 탓하지 않는다)
+const CHEERS = [`딩동댕동! ${NAME} 머릿속에 전구가 반짝! 💡`, `정답! 뇌가 신나서 춤을 춰 💃`, `우와, 정답 로켓 발사! 🚀`, `맞았어! 고양이도 깜짝 놀라 야옹~ 🐱`, `척척박사 등장! 🎓`, `정답! 하이파이브 짝! 🙌`, `딩동댕! 문제가 ${NAME}한테 졌대 😆`, `맞았어! 기분이 솜사탕처럼 몽글몽글 🍭`, `정답! 박수 짝짝짝, 발도 동동 👏`, `우와, 천재 출동! 🦉`, `정답! 별사탕 하나 줄게 ⭐`, `딩동댕! ${NAME} 오늘 반짝반짝 빛나 ✨`];
+const OOPS = [`앗, 문제가 장난을 쳤나 봐!<br>다시 생각해 볼까?`, `어라라? 살짝 미끄러졌어 🍌<br>다시 생각해 볼까?`, `아깝다! 정답이 숨바꼭질 중이야 🙈<br>다시 생각해 볼까?`, `문제가 꾀를 좀 부렸네 🦊<br>다시 생각해 볼까?`, `탐정 모자를 쓰고 🕵️<br>다시 생각해 볼까?`, `거의 다 왔어! 한 걸음만 더 👣<br>다시 생각해 볼까?`, `실수는 뇌가 쑥쑥 크는 소리야 🌱<br>다시 생각해 볼까?`, `괜찮아 ${NAME}야,<br>다시 생각해 볼까?`];
+const oops = (verb = "생각해") => OOPS[Math.floor(Math.random() * OOPS.length)].replace("생각해", verb);
+const keyOf = n => "word-quiz-week" + n + "-v2";
+let KEY = keyOf(12);
 const fresh = () => ({practice: makePractice(), days: [0, 1].map(() => ({i: 0, res: {}, done: false})), celebrated: false});
 let state = load() || fresh();
 syncDays();
@@ -377,6 +642,38 @@ function logToday(subj, label) {
 }
 const score = k => DAYS[k].filter((_, p) => state.days[k].res[p] === true).length;
 
+/* ---------- 보호자 기록 보내기 (구글 시트) ----------
+   Day(섹션)를 끝낼 때마다 과목·Day·점수를 보호자의 구글 시트에 한 줄 보낸다.
+   인터넷이 안 되면 이 기기에 모아 두었다가 다음에 퀴즈를 열 때 다시 보낸다. */
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbyNrz-5pALJx00it3LzFE39aT3N-ybech0PHhkLrE7Em4sy8oUSMISfSwSHzuGqRCub8w/exec";
+const SHEET_KEY = "jiho-study-2026";
+const SHEET_Q = "sheet-queue-v1";
+function sheetFlush() {
+  if (!SHEET_URL || !navigator.onLine) return;
+  let q = [];
+  try { q = JSON.parse(localStorage.getItem(SHEET_Q)) || []; } catch (e) {}
+  if (!q.length) return;
+  localStorage.setItem(SHEET_Q, "[]");
+  q.forEach(row => fetch(SHEET_URL, {method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(row)})
+    .catch(() => { try { const r = JSON.parse(localStorage.getItem(SHEET_Q)) || []; r.push(row); localStorage.setItem(SHEET_Q, JSON.stringify(r)); } catch (e) {} }));
+}
+function sheetSend(row) {
+  try {
+    const q = JSON.parse(localStorage.getItem(SHEET_Q)) || [];
+    q.push({key: SHEET_KEY, ...row});
+    localStorage.setItem(SHEET_Q, JSON.stringify(q.slice(-50)));
+  } catch (e) {}
+  sheetFlush();
+}
+// bag = 그 Day의 기록(res·fast·extra), base = 그 Day 문제 목록, score = 처음에 바로 맞힌 개수
+function reportDay(subj, day, bag, base, score, memo) {
+  const fast = Object.values(bag.fast || {}).reduce((a, b) => a + b, 0);
+  const retry = new Set(bag.extra || []).size;
+  sheetSend({subj, day, score, total: base.length, retry, fast, memo: memo || ""});
+}
+window.addEventListener("online", sheetFlush);
+setTimeout(sheetFlush, 1500);
+
 /* ---------- 찍기 방지 ----------
    ② 문제가 나오고 WAIT_MS 안에 누르면 답을 받지 않고 "천천히" 알림을 띄운다(듣기 문제는 소리가 끝날 즈음부터 잰다).
    ① 처음에 틀린 문제는 Day 끝에 순서와 보기를 바꿔 다시 낸다. 다시 풀기에서 한 번에 맞혀야 끝난다.
@@ -413,6 +710,37 @@ function retryIntro(n) {
   popup("try", `${NAME}야, 처음에 틀린 문제를<br>한 번 더 풀어 볼까?`, `${n}문제가 다시 나와. 이번엔 천천히 읽고 한 번에 맞혀 보자! 한 번에 맞혀야 끝나.`, [["좋아, 해 볼게!", () => armWait()]]);
 }
 
+function weekStatus(n) {
+  try {
+    const s = JSON.parse(localStorage.getItem(keyOf(n)));
+    if (!s || !s.days) return "";
+    if (s.days.every(d => d.done)) return "다 했어!";
+    if (s.days[0] && s.days[0].done) return "최종 평가 남음";
+    return s.days.some(d => d.i > 0) ? "하는 중" : "";
+  } catch (e) { return ""; }
+}
+function selectWeek(n) {
+  W = n; WORDS = WEEKS[n]; KEY = keyOf(n);
+  state = load() || fresh(); syncDays(); save();
+  renderHome(); window.scrollTo(0, 0);
+}
+function renderWeeks() {
+  closePopup(); cur = null;
+  const cards = WEEK_NUMS.map(n => {
+    const st = weekStatus(n);
+    return `<button class="day ${st === "다 했어!" ? "done" : ""}" data-w="${n}" aria-label="Week ${n}${st ? ", " + st : ""}"><span class="d">Week ${n}</span><span class="s">${st || "단어 20개"}</span></button>`;
+  }).join("");
+  main.innerHTML = `
+    <a class="link" href="index.html">← 과목 고르기</a>
+    <section class="card hero">
+      ${MASCOT("모자 쓰고 스케이트보드를 타고 지호를 반기는 시나모롤", "bob")}
+      <h2><span class="nw">오늘은</span> <span class="nw">영어 단어 시간</span></h2>
+      <p class="lead">공부할 Week를 골라 보자~</p>
+    </section>
+    <section class="days weeks" aria-label="Week 고르기">${cards}</section>`;
+  main.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => selectWeek(Number(b.dataset.w))));
+}
+
 function renderHome() {
   closePopup(); cur = null;
   const firstOpen = state.days.findIndex(d => !d.done);
@@ -424,11 +752,11 @@ function renderHome() {
     return `<button class="day ${k === 1 ? "final" : ""} ${d.done ? "done" : ""} ${k === firstOpen ? "next" : ""}" data-day="${k}" aria-label="${LABEL(k)}, ${sub}">${img}<span class="d">${LABEL(k)}</span><span class="s">${sub}</span></button>`;
   }).join("");
   main.innerHTML = `
-    <a class="link" href="index.html">← 과목 고르기</a>
+    <button class="link" id="toWeeks">← Week 고르기</button>
     <section class="card hero">
       ${MASCOT("모자 쓰고 스케이트보드를 타고 지호를 반기는 시나모롤", "bob")}
-      <h2><span class="nw">오늘은</span> <span class="nw">영어 시간</span></h2>
-      <p class="lead">우리 영어 단어 같이 익혀 보자~</p>
+      <h2><span class="nw">Week ${W}</span> <span class="nw">영어 단어</span></h2>
+      <p class="lead">우리 Week ${W} 단어 같이 익혀 보자~</p>
     </section>
     <section class="days" aria-label="날짜별 문제">${cards}</section>
     <p class="note" style="text-align:center">오늘의 단어 20문제로 익히고, 최종 평가로 직접 써 봐요! 오늘의 단어는 할 때마다 순서가 바뀌어요.</p>
@@ -436,6 +764,7 @@ function renderHome() {
     ${voiceSetHTML()}`;
   bindVoiceSet();
   main.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => startDay(Number(b.dataset.day))));
+  $("toWeeks").addEventListener("click", renderWeeks);
   if (allDone) $("party").addEventListener("click", renderCelebrate);
 }
 
@@ -492,6 +821,15 @@ function record(ok) {
   save();
 }
 
+function hintText(q) {
+  const [en, ko, third] = WORDS[q.w];
+  if (W === 12) return q.type === "en" ? `힌트: ${third}` : `'${ko}'${josa(ko, "은", "는")} ${third}`;
+  if (q.type === "en") return `예문을 읽어 봐: <span class="en">${third}</span>`;
+  const blank = third.replace(new RegExp(en.replace(/ /g, "\\s+"), "i"), "____");
+  const start = `'<span class="en">${en[0]}</span>'(으)로 시작하는 단어야.`;
+  return blank === third ? start : `<span class="en">${blank}</span><br>빈칸에 들어가는 단어를 찾아봐! ${start}`;
+}
+
 function choose(q, btn) {
   if (btn.classList.contains("tried") || btn.classList.contains("right")) return;
   const k = Number(btn.dataset.k), [en, ko, hint] = WORDS[q.w];
@@ -510,8 +848,8 @@ function choose(q, btn) {
   btn.classList.add("tried"); btn.setAttribute("aria-disabled", "true");
   const acts = [["다시 해 볼게!", () => {}]];
   if (tries >= 2) acts.push(["같이 정답 보기", () => showAnswer(q), "soft"]);
-  const lead = q.type === "en" ? `힌트: ${hint}` : `'${ko}'${josa(ko, "은", "는")} ${hint}`;
-  popup("try", `괜찮아 ${NAME}야,<br>다시 생각해 볼까?`, `${lead}${CAN_SPEAK && q.type === "en" ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`, acts);
+  const lead = hintText(q);
+  popup("try", oops(), `${lead}${CAN_SPEAK && q.type === "en" ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`, acts);
 }
 
 function checkSpell(q, inp) {
@@ -536,7 +874,7 @@ function checkSpell(q, inp) {
   else if (same >= 2) hint = `<span class="en">${en.slice(0, same)}</span>까지는 맞았어! 모두 ${en.length}글자야.`;
   const acts = [["다시 들어 볼게!", () => { speak(en, 0.6); inp.focus(); inp.select(); }]];
   if (tries >= 2) acts.push(["같이 정답 보기", () => showSpell(q, inp), "soft"]);
-  popup("try", `괜찮아 ${NAME}야,<br>다시 써 볼까?`, hint, acts);
+  popup("try", oops("써"), hint, acts);
 }
 
 function showSpell(q, inp) {
@@ -584,7 +922,7 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save(); logToday("word", LABEL(cur));
+  const d = state.days[cur]; d.done = true; save(); logToday("word", "Week " + W + " " + LABEL(cur)); reportDay("영어 단어", "Week " + W + " " + LABEL(cur), d, DAYS[cur].map((_, x) => x), score(cur));
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const total = DAYS[cur].length, s = score(cur);
   const msg = cur === 1
@@ -616,7 +954,7 @@ function renderCelebrate() {
   main.innerHTML = `<section class="card center celebrate">
     <div class="art">${TROPHY}${MASCOT("모자 쓰고 스케이트보드를 타고 축하하는 시나모롤")}</div>
     <h2><span class="nw">축하해,</span> <span class="nw">${NAME}야!</span></h2>
-    <p class="q">오늘의 단어 20문제를 다 익히고, 최종 평가까지 모두 해냈어! 이제 ${NAME}는 단어 박사야.</p>
+    <p class="q">Week ${W} 오늘의 단어 20문제를 다 익히고, 최종 평가까지 모두 해냈어! 이제 ${NAME}는 단어 박사야.</p>
     <div class="badges">${DAYS.map((_, k) => `<span>${LABEL(k)} ✓</span>`).join("")}</div>
     <p class="lead">최종 평가에서 처음에 바로 쓴 단어: <b>${fin} / 20</b></p>
     ${recordTable([0, 1])}
@@ -642,7 +980,7 @@ function confetti() {
 }
 
 if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch (e) {} }
-renderHome();
+renderWeeks();
 </script>
 </body>
 </html>

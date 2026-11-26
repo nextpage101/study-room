@@ -283,7 +283,10 @@ const DAYS = [0, 1, 2, 3, 4].map(d => {
   return [...a, ...a.map(n => n + 1)];
 });
 
-const CHEERS = [`${NAME}야, 정답이야!`, `와, ${NAME}야 맞았어!`, `딩동댕! ${NAME} 최고!`, `멋져, ${NAME}야!`];
+// 피드백 멘트: 맞혔을 때·틀렸을 때 재미있는 말 여러 가지 중 하나를 고른다(틀렸을 때도 아이를 탓하지 않는다)
+const CHEERS = [`딩동댕동! ${NAME} 머릿속에 전구가 반짝! 💡`, `정답! 뇌가 신나서 춤을 춰 💃`, `우와, 정답 로켓 발사! 🚀`, `맞았어! 고양이도 깜짝 놀라 야옹~ 🐱`, `척척박사 등장! 🎓`, `정답! 하이파이브 짝! 🙌`, `딩동댕! 문제가 ${NAME}한테 졌대 😆`, `맞았어! 기분이 솜사탕처럼 몽글몽글 🍭`, `정답! 박수 짝짝짝, 발도 동동 👏`, `우와, 천재 출동! 🦉`, `정답! 별사탕 하나 줄게 ⭐`, `딩동댕! ${NAME} 오늘 반짝반짝 빛나 ✨`];
+const OOPS = [`앗, 문제가 장난을 쳤나 봐!<br>다시 생각해 볼까?`, `어라라? 살짝 미끄러졌어 🍌<br>다시 생각해 볼까?`, `아깝다! 정답이 숨바꼭질 중이야 🙈<br>다시 생각해 볼까?`, `문제가 꾀를 좀 부렸네 🦊<br>다시 생각해 볼까?`, `탐정 모자를 쓰고 🕵️<br>다시 생각해 볼까?`, `거의 다 왔어! 한 걸음만 더 👣<br>다시 생각해 볼까?`, `실수는 뇌가 쑥쑥 크는 소리야 🌱<br>다시 생각해 볼까?`, `괜찮아 ${NAME}야,<br>다시 생각해 볼까?`];
+const oops = (verb = "생각해") => OOPS[Math.floor(Math.random() * OOPS.length)].replace("생각해", verb);
 const KEY = "english-quiz-days-v1";
 const fresh = () => ({days: DAYS.map(() => ({i: 0, res: {}, done: false})), celebrated: false});
 let state = load() || fresh();
@@ -383,6 +386,38 @@ function logToday(subj, label) {
   const d = new Date(), w = "일월화수목금토"[d.getDay()];
   return `<span class="nw">${d.getFullYear()}년</span> <span class="nw">${d.getMonth() + 1}월 ${d.getDate()}일</span> <span class="nw">${w}요일</span>`;
 }
+
+/* ---------- 보호자 기록 보내기 (구글 시트) ----------
+   Day(섹션)를 끝낼 때마다 과목·Day·점수를 보호자의 구글 시트에 한 줄 보낸다.
+   인터넷이 안 되면 이 기기에 모아 두었다가 다음에 퀴즈를 열 때 다시 보낸다. */
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbyNrz-5pALJx00it3LzFE39aT3N-ybech0PHhkLrE7Em4sy8oUSMISfSwSHzuGqRCub8w/exec";
+const SHEET_KEY = "jiho-study-2026";
+const SHEET_Q = "sheet-queue-v1";
+function sheetFlush() {
+  if (!SHEET_URL || !navigator.onLine) return;
+  let q = [];
+  try { q = JSON.parse(localStorage.getItem(SHEET_Q)) || []; } catch (e) {}
+  if (!q.length) return;
+  localStorage.setItem(SHEET_Q, "[]");
+  q.forEach(row => fetch(SHEET_URL, {method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(row)})
+    .catch(() => { try { const r = JSON.parse(localStorage.getItem(SHEET_Q)) || []; r.push(row); localStorage.setItem(SHEET_Q, JSON.stringify(r)); } catch (e) {} }));
+}
+function sheetSend(row) {
+  try {
+    const q = JSON.parse(localStorage.getItem(SHEET_Q)) || [];
+    q.push({key: SHEET_KEY, ...row});
+    localStorage.setItem(SHEET_Q, JSON.stringify(q.slice(-50)));
+  } catch (e) {}
+  sheetFlush();
+}
+// bag = 그 Day의 기록(res·fast·extra), base = 그 Day 문제 목록, score = 처음에 바로 맞힌 개수
+function reportDay(subj, day, bag, base, score, memo) {
+  const fast = Object.values(bag.fast || {}).reduce((a, b) => a + b, 0);
+  const retry = new Set(bag.extra || []).size;
+  sheetSend({subj, day, score, total: base.length, retry, fast, memo: memo || ""});
+}
+window.addEventListener("online", sheetFlush);
+setTimeout(sheetFlush, 1500);
 
 /* ---------- 찍기 방지 ----------
    ② 문제가 나오고 WAIT_MS 안에 누르면 답을 받지 않고 "천천히" 알림을 띄운다(듣기 문제는 소리가 끝날 즈음부터 잰다).
@@ -512,7 +547,7 @@ function choose(q, btn) {
   const hint = $("sent")
     ? `잘 들어 봐. <span class="en">${q.key}</span>라는 말이 나와. 뜻은 '${q.mean}'${josa(q.mean, "이야", "야")}. 🔊 들려줘를 눌러 한 번 더 들어 볼까?`
     : `단어 <span class="en">${q.key}</span>의 뜻은 '${q.mean}'${josa(q.mean, "이야", "야")}. 문장을 다시 천천히 읽어 볼까?${CAN_SPEAK ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`;
-  popup("try", `괜찮아 ${NAME}야,<br>다시 생각해 볼까?`, hint, acts);
+  popup("try", oops(), hint, acts);
 }
 
 function showAnswer(q) {
@@ -551,7 +586,7 @@ function popup(kind, title, body, actions) {
 function closePopup() { const p = $("pop"); if (p) p.remove(); }
 
 function finishDay() {
-  const d = state.days[cur]; d.done = true; save(); logToday("eng", "Day " + (cur + 1));
+  const d = state.days[cur]; d.done = true; save(); logToday("eng", "Day " + (cur + 1)); reportDay("영어 읽기/듣기", "Day " + (cur + 1), d, DAYS[cur], DAYS[cur].filter(n => d.res[n] === true).length);
   if (state.days.every(x => x.done) && !state.celebrated) { state.celebrated = true; save(); return renderCelebrate(); }
   const score = DAYS[cur].filter(n => d.res[n] === true).length;
   main.innerHTML = `<section class="card center">
