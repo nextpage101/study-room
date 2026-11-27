@@ -601,7 +601,7 @@ function bindVoiceSet() {
 // 단어 듣기: 미리 만든 음성 파일(신경망 목소리 Jenny, 25% 느리게, audio/word/단어.mp3)을 먼저 틀고,
 // 못 틀면 기기 목소리로 읽는다. 글자 읽어주기 기능이 없는 휴대폰 브라우저에서도 소리가 난다
 const CAN_PLAY = typeof Audio !== "undefined", CAN_HEAR = CAN_SPEAK || CAN_PLAY;
-const audioName = s => s === TEST_EN ? "_test" : s.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+const audioName = s => s === TEST_EN ? "test-voice" : s.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
 let player = null, playRun = 0;
 function speak(text, rate) {
   playRun++;
