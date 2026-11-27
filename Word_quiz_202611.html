@@ -597,7 +597,26 @@ function bindVoiceSet() {
   sel.addEventListener("change", () => { voicePref.uri = sel.value; savePref(); speak(TEST_EN); });
   document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speak(TEST_EN); }));
   $("voiceTest").addEventListener("click", () => speak(TEST_EN));
-}function speak(text, rate) {
+}
+// 단어 듣기: 미리 만든 음성 파일(신경망 목소리 Jenny, 25% 느리게, audio/word/단어.mp3)을 먼저 틀고,
+// 못 틀면 기기 목소리로 읽는다. 글자 읽어주기 기능이 없는 휴대폰 브라우저에서도 소리가 난다
+const CAN_PLAY = typeof Audio !== "undefined", CAN_HEAR = CAN_SPEAK || CAN_PLAY;
+const audioName = s => s === TEST_EN ? "_test" : s.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+let player = null, playRun = 0;
+function speak(text, rate) {
+  playRun++;
+  if (player) { try { player.pause(); } catch (e) {} player = null; }
+  try { if (CAN_SPEAK) speechSynthesis.cancel(); } catch (e) {}
+  if (!CAN_PLAY) { speakDevice(text, rate); return; }
+  const run = playRun, fallback = () => { if (run === playRun) speakDevice(text, rate); };
+  try {
+    const a = player = new Audio(`audio/word/${audioName(text)}.mp3`);
+    a.playbackRate = (rate || 0.75) / 0.75 * (voicePref.rate || 1);
+    a.onerror = fallback;
+    const p = a.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== "NotAllowedError" && e.name !== "AbortError") fallback(); });
+  } catch (e) { fallback(); }
+}
+function speakDevice(text, rate) {
   if (!CAN_SPEAK) return;
   try {
     speechSynthesis.cancel();
@@ -785,7 +804,7 @@ function renderQ() {
   let body = "";
   if (q.type === "en") {
     body = `<p class="q"><span class="qnum">${re ? "다시" : d.i + 1 + "번"}</span>이 단어의 뜻을 골라 보세요.</p>
-      <div class="box"><p class="big-en" lang="en">${en}</p>${CAN_SPEAK ? `<button class="listen" id="listen">🔊 듣기</button>` : ""}</div>
+      <div class="box"><p class="big-en" lang="en">${en}</p>${CAN_HEAR ? `<button class="listen" id="listen">🔊 듣기</button>` : ""}</div>
       <div class="opts" role="group" aria-label="뜻 고르기">${q.opts.map((w, k) => `<button class="opt" data-k="${k}"><span class="no">${k + 1}</span><span>${WORDS[w][1]}</span></button>`).join("")}</div>`;
   } else if (q.type === "ko") {
     body = `<p class="q"><span class="qnum">${re ? "다시" : d.i + 1 + "번"}</span>이 뜻에 맞는 영어 단어를 골라 보세요.</p>
@@ -793,7 +812,7 @@ function renderQ() {
       <div class="opts" role="group" aria-label="단어 고르기">${q.opts.map((w, k) => `<button class="opt en" data-k="${k}" lang="en"><span class="no">${k + 1}</span><span>${WORDS[w][0]}</span></button>`).join("")}</div>`;
   } else {
     body = `<p class="q"><span class="qnum">${re ? "다시" : d.i + 1 + "번"}</span>잘 듣고, 영어로 써 보세요.</p>
-      <div class="box">${CAN_SPEAK ? `<button class="listen big" id="listen">🔊 들려줘</button>` : `<p class="big-en" lang="en">${en.replace(/./g, "_ ")}</p>`}<p class="meaning">뜻: ${ko}</p></div>
+      <div class="box">${CAN_HEAR ? `<button class="listen big" id="listen">🔊 들려줘</button>` : `<p class="big-en" lang="en">${en.replace(/./g, "_ ")}</p>`}<p class="meaning">뜻: ${ko}</p></div>
       <form id="f" class="spell" autocomplete="off"><input id="sp${d.i}" type="text" lang="en" inputmode="latin" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="14" aria-label="영어 단어 쓰기" placeholder="여기에 써요"></form>
       <div class="btns" id="btns"><button class="btn" type="submit" form="f">정답 확인</button></div>`;
   }
@@ -849,7 +868,7 @@ function choose(q, btn) {
   const acts = [["다시 해 볼게!", () => {}]];
   if (tries >= 2) acts.push(["같이 정답 보기", () => showAnswer(q), "soft"]);
   const lead = hintText(q);
-  popup("try", oops(), `${lead}${CAN_SPEAK && q.type === "en" ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`, acts);
+  popup("try", oops(), `${lead}${CAN_HEAR && q.type === "en" ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`, acts);
 }
 
 function checkSpell(q, inp) {
