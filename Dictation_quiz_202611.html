@@ -346,8 +346,11 @@ function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 // 목소리: 기기에 있는 한국어 목소리 중 더 자연스러운 것을 먼저 고르고, 어른이 바꿀 수 있게 한다
 const VOICE_KEY = "dictation-voice-v1";
-const RATES = [["천천히", 0.8], ["보통", 0.9], ["조금 빠르게", 1.0]];
+// 받아쓰기용으로 예전보다 30% 느리게 (예전 0.8 / 0.9 / 1.0)
+const RATES = [["천천히", 0.56], ["보통", 0.63], ["조금 빠르게", 0.7]];
+const BASE_RATE = 0.63, WORD_GAP = 550;
 let voicePref = (() => { try { return JSON.parse(localStorage.getItem(VOICE_KEY)) || {}; } catch (e) { return {}; } })();
+if (voicePref.rate && !RATES.some(r => r[1] === voicePref.rate)) delete voicePref.rate;
 const koVoices = () => { try { return speechSynthesis.getVoices().filter(v => /^ko([-_]|$)/i.test(v.lang)); } catch (e) { return []; } };
 const voiceScore = v => {
   const n = (v.name + " " + v.voiceURI).toLowerCase(); let s = 0;
@@ -363,22 +366,54 @@ function pickVoice() {
   if (!vs.length) return null;
   return vs.find(v => v.voiceURI === voicePref.uri) || vs.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
 }
-function speak(text) {
-  if (!CAN_SPEAK) return;
+// 말하기: 낱말을 하나씩 읽고 낱말 사이를 확실히 쉰다 (띄어쓰기가 들리게)
+let speakRun = 0, player = null;
+function stopSound() {
+  speakRun++;
+  try { if (CAN_SPEAK) speechSynthesis.cancel(); } catch (e) {}
+  if (player) { try { player.pause(); } catch (e) {} player = null; }
+}
+function speak(text, times = 1) {
+  stopSound();
+  if (!CAN_SPEAK) return false;
+  const run = speakRun, v = pickVoice();
+  const words = text.replace(/[,.?!]/g, " ").trim().split(/\s+/);
+  const say = k => {
+    if (run !== speakRun) return;
+    if (k >= words.length) { if (--times > 0) setTimeout(() => say(0), 1500); return; }
+    try {
+      const u = new SpeechSynthesisUtterance(words[k]);
+      u.lang = "ko-KR"; u.rate = voicePref.rate || BASE_RATE; u.pitch = 1;
+      if (v) { u.voice = v; u.lang = v.lang; }
+      u.onend = () => setTimeout(() => say(k + 1), WORD_GAP);
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  };
+  say(0);
+  return true;
+}
+// 문제 듣기: 미리 만든 음성 파일(신경망 목소리 '선희', 30% 느리게, 낱말 사이 0.55초 쉼)을 먼저 틀고,
+// 파일을 못 틀면 기기 목소리로 읽는다. 속도 버튼은 파일 재생 속도에도 적용된다
+const CAN_PLAY = typeof Audio !== "undefined", CAN_HEAR = CAN_SPEAK || CAN_PLAY;
+function speakQ(L, q) {
+  stopSound();
+  if (!CAN_PLAY) { speak(q.full, 2); return; }
+  const run = speakRun, fallback = () => { if (run === speakRun) speak(q.full, 2); };
   try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/,\s*/g, ", "));
-    u.lang = "ko-KR"; u.rate = voicePref.rate || 0.9; u.pitch = 1;
-    const v = pickVoice();
-    if (v) { u.voice = v; u.lang = v.lang; }
-    speechSynthesis.speak(u);
-  } catch (e) {}
+    const a = player = new Audio(`audio/dict/g${L.g}_${q.n}.mp3`);
+    a.playbackRate = (voicePref.rate || BASE_RATE) / BASE_RATE;
+    a.onerror = fallback;
+    // 한 번 누르면 두 번 들려준다 (첫 번째가 끝나고 1.5초 쉬고 한 번 더)
+    let plays = 1;
+    a.onended = () => { if (plays < 2 && run === speakRun) { plays++; setTimeout(() => { if (run === speakRun) { a.currentTime = 0; a.play().catch(() => {}); } }, 1500); } };
+    const p = a.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== "NotAllowedError" && e.name !== "AbortError") fallback(); });
+  } catch (e) { fallback(); }
 }
 function savePref() { try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePref)); } catch (e) {} }
 function voiceSetHTML() {
   if (!CAN_SPEAK) return "";
-  return `<details class="adult voiceset"><summary>목소리 바꾸기 (어른용)</summary>
-    <label class="note" for="voiceSel">한국어 목소리</label>
+  return `<details class="adult voiceset"><summary>목소리·속도 (어른용)</summary>
+    <label class="note" for="voiceSel">기기 목소리 (문제 음성 파일을 못 틀 때만 쓰여요)</label>
     <select id="voiceSel" class="voice-sel"></select>
     <div class="rate-row">${RATES.map(([t, r]) => `<button class="rate" data-r="${r}">${t}</button>`).join("")}</div>
     <button class="speak soft" id="voiceTest">🔊 들어 보기</button>
@@ -396,8 +431,8 @@ function bindVoiceSet() {
   fill();
   try { speechSynthesis.addEventListener("voiceschanged", fill); } catch (e) {}
   sel.addEventListener("change", () => { voicePref.uri = sel.value; savePref(); speak("안녕, 오늘도 같이 받아쓰기 해 보자."); });
-  document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speak("안녕, 오늘도 같이 받아쓰기 해 보자."); }));
-  $("voiceTest").addEventListener("click", () => speak("안녕, 오늘도 같이 받아쓰기 해 보자."));
+  document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speakQ(LEVELS[0], LEVELS[0].qs[0]); }));
+  $("voiceTest").addEventListener("click", () => speakQ(LEVELS[0], LEVELS[0].qs[0]));
 }
 if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.addEventListener("voiceschanged", () => {}); } catch (e) {} }
 // 받아쓰기 채점: 문장부호(. , ? !)와 앞뒤 공백은 보지 않고, 글자와 띄어쓰기를 본다
@@ -637,7 +672,7 @@ function renderDict() {
     <section class="card"><div class="sec">${L.g}급 · ② 받아쓰기</div>
       <p class="q"><span class="qnum">${i + 1}번</span>잘 듣고 문장을 써 보세요. 공책에 써도 좋아요.</p>
       <div class="box">
-        <div class="speak-row">${CAN_SPEAK ? `<button class="speak" id="say">🔊 들려줘</button>` : `<p class="note">이 기기에서는 소리가 나오지 않아요.</p>`}</div>
+        <div class="speak-row">${CAN_HEAR ? `<button class="speak" id="say">🔊 들려줘</button>` : `<p class="note">이 기기에서는 소리가 나오지 않아요.</p>`}</div>
       </div>
       <label class="note" for="ans">${i + 1}번 답 쓰는 곳</label>
       <input class="dict-in" id="ans" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="${last ? "done" : "next"}" value="${(d.ans[i] || "").replace(/"/g, "&quot;")}" placeholder="여기에 써요">
@@ -651,8 +686,8 @@ function renderDict() {
   const keep = () => { state.lv[cur].dict.ans[i] = inp.value; save(); };
   inp.addEventListener("input", keep);
   inp.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); $("next").click(); } });
-  $("back").addEventListener("click", () => { keep(); renderLevel(cur); });
-  if (CAN_SPEAK) $("say").addEventListener("click", () => { speak(q.full); $("say").textContent = "🔊 한 번 더"; });
+  $("back").addEventListener("click", () => { keep(); stopSound(); renderLevel(cur); });
+  if (CAN_HEAR) $("say").addEventListener("click", () => { speakQ(L, q); $("say").textContent = "🔊 한 번 더"; });
   bindVoiceSet();
   if ($("prev")) $("prev").addEventListener("click", () => { keep(); state.lv[cur].dict.i = i - 1; save(); renderDict(); });
   $("next").addEventListener("click", () => {
@@ -667,7 +702,7 @@ function renderDict() {
     }
     finishDict();
   });
-  if (CAN_SPEAK) setTimeout(() => speak(q.full), 300);
+  if (CAN_HEAR) setTimeout(() => speakQ(L, q), 300);
 }
 
 function finishDict() {
@@ -685,7 +720,7 @@ function renderResult(fresh) {
     const cls = !a ? "" : good ? "ok" : "no";
     const mark = !a ? "" : good ? "⭕" : "💗";
     const mine = !a ? "" : good ? "" : `<div class="mine">${NAME}가 쓴 답: <b>${d.ans[i].replace(/</g, "&lt;")}</b></div>`;
-    return `<div class="res-row ${cls}"><span class="n">${i + 1}.</span><span class="ans">${q.full}</span><span class="mark">${mark}${CAN_SPEAK ? ` <button class="again" data-i="${i}">🔊</button>` : ""}</span>${mine}</div>`;
+    return `<div class="res-row ${cls}"><span class="n">${i + 1}.</span><span class="ans">${q.full}</span><span class="mark">${mark}${CAN_HEAR ? ` <button class="again" data-i="${i}">🔊</button>` : ""}</span>${mine}</div>`;
   }).join("");
   const msg = typed === 0
     ? `${NAME}야, 10문장 받아쓰기 끝! 공책에 쓴 답과 하나씩 맞춰 보자.`
@@ -698,7 +733,7 @@ function renderResult(fresh) {
     <p class="note">띄어쓰기도 잘 보세요. 마침표(.)와 물음표(?)는 채점하지 않아요.</p>
     <div class="res">${rows}</div>
     <div class="btns"><button class="btn" id="lv">${L.g}급 화면으로</button><button class="btn soft" id="redo">받아쓰기 다시 하기</button></div></section>`;
-  main.querySelectorAll(".again").forEach(b => b.addEventListener("click", () => speak(L.qs[Number(b.dataset.i)].full)));
+  main.querySelectorAll(".again").forEach(b => b.addEventListener("click", () => speakQ(L, L.qs[Number(b.dataset.i)])));
   $("lv").addEventListener("click", () => renderLevel(cur));
   $("redo").addEventListener("click", () => { state.lv[cur].dict = freshLv().dict; save(); renderDict(); window.scrollTo(0, 0); });
   window.scrollTo(0, 0);

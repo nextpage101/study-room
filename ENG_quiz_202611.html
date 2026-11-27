@@ -348,9 +348,31 @@ function bindVoiceSet() {
   sel.addEventListener("change", () => { voicePref.uri = sel.value; savePref(); speak(TEST_EN); });
   document.querySelectorAll(".rate").forEach(b => b.addEventListener("click", () => { voicePref.rate = Number(b.dataset.r); savePref(); fill(); speak(TEST_EN); }));
   $("voiceTest").addEventListener("click", () => speak(TEST_EN));
-}function speak(text) {
+}
+// 문장 듣기: 미리 만든 음성 파일(신경망 목소리 Jenny, 조금 느리게)을 먼저 틀고, 못 틀면 기기 목소리로 읽는다.
+// 음성 파일 덕분에 글자 읽어주기 기능이 없는 휴대폰 브라우저에서도 듣고 고르기가 나온다
+const CAN_PLAY = typeof Audio !== "undefined", CAN_HEAR = CAN_SPEAK || CAN_PLAY;
+let player = null, playRun = 0;
+function stopSound() {
+  playRun++;
+  if (player) { try { player.pause(); } catch (e) {} player = null; }
+  try { if (CAN_SPEAK) speechSynthesis.cancel(); } catch (e) {}
+}
+function speakQ(q) {
+  stopSound();
+  if (!CAN_PLAY) { speak(q.en); return; }
+  const run = playRun, fallback = () => { if (run === playRun) speak(q.en); };
+  try {
+    const a = player = new Audio(`audio/eng/q${q.n}.mp3`);
+    a.playbackRate = (document.getElementById("sent") ? 0.95 : 1) * (voicePref.rate || 1);
+    a.onerror = fallback;
+    const p = a.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== "NotAllowedError" && e.name !== "AbortError") fallback(); });
+  } catch (e) { fallback(); }
+}
+function speak(text) {
   if (!CAN_SPEAK) return;
   try {
+    if (player) { try { player.pause(); } catch (e) {} player = null; }
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     const base = document.getElementById("sent") ? 0.72 : 0.8; // 듣고 고르기는 조금 더 천천히
@@ -501,21 +523,21 @@ function renderQ() {
       <p class="q"><span class="qnum">${re ? "다시" : d.i + 1 + "번"}</span>${listen ? "잘 듣고, 알맞은 뜻을 골라 보세요." : "문장을 읽고, 알맞은 뜻을 골라 보세요."}</p>
       ${listen
         ? `<div class="sentence listen-mode"><p class="hidden-en" id="sent">소리를 잘 들어 봐!</p><button class="listen big" id="listen">🔊 들려줘</button></div>`
-        : `<div class="sentence"><p class="en" lang="en">${q.en}</p>${CAN_SPEAK ? `<button class="listen" id="listen">🔊 듣기</button>` : ""}</div>`}
+        : `<div class="sentence"><p class="en" lang="en">${q.en}</p>${CAN_HEAR ? `<button class="listen" id="listen">🔊 듣기</button>` : ""}</div>`}
       <div class="opts" role="group" aria-label="뜻 고르기">
         ${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="no">${k + 1}</span><span>${o}</span></button>`).join("")}
       </div>
     </section>`;
-  $("home").addEventListener("click", renderHome);
-  if (CAN_SPEAK) $("listen").addEventListener("click", () => speak(q.en));
+  $("home").addEventListener("click", () => { stopSound(); renderHome(); });
+  if (CAN_HEAR) $("listen").addEventListener("click", () => speakQ(q));
   main.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => choose(q, b)));
   // 듣고 고르기 문제는 화면이 열리면 한 번 바로 들려준다 (기기가 막으면 '들려줘' 버튼으로 듣는다)
-  if (listen) speak(q.en);
+  if (listen) speakQ(q);
   if (added) retryIntro(added);
 }
 
 // 하루 10문제 중 짝수 번째(2·4·6·8·10번)는 듣고 고르기. 음성이 없는 기기에서는 모두 읽고 고르기.
-function isListen(pos) { return CAN_SPEAK && pos % 2 === 1; }
+function isListen(pos) { return CAN_HEAR && pos % 2 === 1; }
 
 // 듣고 고르기 문제에서 정답을 맞히거나 정답을 볼 때 문장을 보여 준다
 function reveal(q) {
@@ -546,7 +568,7 @@ function choose(q, btn) {
   if (tries >= 2) acts.push(["같이 정답 보기", () => showAnswer(q), "soft"]);
   const hint = $("sent")
     ? `잘 들어 봐. <span class="en">${q.key}</span>라는 말이 나와. 뜻은 '${q.mean}'${josa(q.mean, "이야", "야")}. 🔊 들려줘를 눌러 한 번 더 들어 볼까?`
-    : `단어 <span class="en">${q.key}</span>의 뜻은 '${q.mean}'${josa(q.mean, "이야", "야")}. 문장을 다시 천천히 읽어 볼까?${CAN_SPEAK ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`;
+    : `단어 <span class="en">${q.key}</span>의 뜻은 '${q.mean}'${josa(q.mean, "이야", "야")}. 문장을 다시 천천히 읽어 볼까?${CAN_HEAR ? " 🔊 듣기를 눌러 봐도 좋아." : ""}`;
   popup("try", oops(), hint, acts);
 }
 

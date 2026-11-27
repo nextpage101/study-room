@@ -94,6 +94,11 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
 .today.all .today-h { cursor: pointer; }
 .party { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
 .party svg { position: absolute; filter: drop-shadow(0 2px 3px rgba(196, 83, 122, .3)); }
+.party .emo { position: absolute; line-height: 1; filter: drop-shadow(0 2px 3px rgba(196, 83, 122, .25)); }
+.party .bub { position: absolute; border-radius: 50%; background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.95) 0 12%, rgba(255,214,231,.45) 30%, rgba(199,182,242,.35) 60%, rgba(159,208,245,.5) 100%); border: 2px solid rgba(255,255,255,.8); box-shadow: inset -3px -4px 8px rgba(199,182,242,.45); }
+.party .conf { position: absolute; top: -30px; border-radius: 3px; }
+.party .rainbow { position: absolute; left: 50%; top: 40%; z-index: 1; width: min(560px, 96vw); height: auto; filter: none; }
+.party .crown { position: absolute; left: 50%; z-index: 3; font-size: 54px; line-height: 1; }
 .cheer { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 2; width: max-content; max-width: 92vw; text-align: center; font-family: var(--display); line-height: 1.15; }
 .cheer b { display: block; font-weight: 400; font-size: 60px; color: #E7799D; -webkit-text-stroke: 2px #FFFFFF; paint-order: stroke fill; text-shadow: 0 4px 0 #FFFFFF, 0 6px 16px rgba(196, 83, 122, .45); white-space: nowrap; }
 .cheer span { display: inline-block; margin-top: 10px; font-size: 26px; color: #8A5BC9; background: rgba(255, 255, 255, .92); border: 3px solid #E9DDFB; border-radius: 99px; padding: 6px 20px; }
@@ -351,26 +356,100 @@ h1 { font-family: var(--display); font-weight: 400; font-size: 36px; color: var(
           {transform: "translate(-50%, -50%) scale(1.04)", opacity: 1, offset: 0.55},
           {transform: "translate(-50%, -50%) scale(1)", opacity: 1, offset: 0.85},
           {transform: "translate(-50%, -60%) scale(0.95)", opacity: 0}
-        ], {duration: 3800, easing: "ease-out", fill: "both"});        const W = innerWidth, H = innerHeight, bursts = reduce ? 1 : 4, per = reduce ? 14 : 26;
+        ], {duration: 4600, easing: "ease-out", fill: "both"});
+        const W = innerWidth, H = innerHeight, rnd = (a, b) => a + Math.random() * (b - a);
+        const SVGNS = "http://www.w3.org/2000/svg";
+        // 칭찬 멘트 뒤 무지개, 위에 왕관
+        const rb = document.createElementNS(SVGNS, "svg"); rb.setAttribute("class", "rainbow"); rb.setAttribute("viewBox", "0 0 200 104");
+        rb.innerHTML = ["#FFB3C9", "#FFD59E", "#FFF0A0", "#BDEBC8", "#B9DCF8", "#D7C6F7"].map((c, k) => `<path d="M${8 + k * 9} 100 A${92 - k * 9} ${92 - k * 9} 0 0 1 ${192 - k * 9} 100" fill="none" stroke="${c}" stroke-width="9" stroke-linecap="round"/>`).join("")
+          + `<g fill="#FFFFFF"><circle cx="18" cy="96" r="10"/><circle cx="32" cy="98" r="8"/><circle cx="6" cy="100" r="6"/><circle cx="182" cy="96" r="10"/><circle cx="168" cy="98" r="8"/><circle cx="194" cy="100" r="6"/></g>`;
+        layer.appendChild(rb);
+        rb.animate([{transform: "translate(-50%, -78%) scale(.6)", opacity: 0}, {transform: "translate(-50%, -78%) scale(1)", opacity: .95, offset: .18}, {transform: "translate(-50%, -78%) scale(1)", opacity: .95, offset: .85}, {transform: "translate(-50%, -78%) scale(1)", opacity: 0}], {duration: 4600, easing: "ease-out", fill: "both"});
+        const crown = document.createElement("div"); crown.className = "crown"; crown.textContent = "👑";
+        crown.style.top = (cheer.offsetTop - cheer.offsetHeight / 2 - 62) + "px"; layer.appendChild(crown);
+        crown.animate(reduce ? [{opacity: 0, transform: "translateX(-50%)"}, {opacity: 1, transform: "translateX(-50%)", offset: .15}, {opacity: 1, transform: "translateX(-50%)", offset: .85}, {opacity: 0, transform: "translateX(-50%)"}] : [
+          {transform: "translate(-50%, -120px) rotate(-20deg)", opacity: 0},
+          {transform: "translate(-50%, 0) rotate(8deg)", opacity: 1, offset: .2},
+          {transform: "translate(-50%, 0) rotate(-6deg)", opacity: 1, offset: .4},
+          {transform: "translate(-50%, 0) rotate(4deg)", opacity: 1, offset: .6},
+          {transform: "translate(-50%, 0) rotate(0deg)", opacity: 1, offset: .85},
+          {transform: "translate(-50%, -20px)", opacity: 0}
+        ], {duration: 4600, easing: "ease-out", fill: "both"});
+        // 1) 터지는 폭죽: 하트·별·리본 모양 + 여자아이가 좋아하는 그림 글자
+        const BOW_P = "M20 20 C14 12 4 8 3 14 C2 20 4 28 9 27 C13 26 17 23 20 20z M20 20 C26 12 36 8 37 14 C38 20 36 28 31 27 C27 26 23 23 20 20z M17 18 h6 v5 h-6z M18 23 L13 36 L17 34 L20 37 L19 23z M22 23 L27 36 L23 34 L20 37 L21 23z";
+        const SHAPES = [HEART_P, STAR_P, BOW_P];
+        const EMO = ["🎀", "🦄", "🌸", "🦋", "💖", "🍓", "🧁", "🌈", "✨", "🌷", "🍭", "💎", "🐰", "🎈"];
+        const bursts = reduce ? 1 : 6, per = reduce ? 14 : 24;
         for (let b = 0; b < bursts; b++) {
-          const ox = W * (0.2 + 0.6 * ((b * 0.37 + 0.5) % 1)), oy = H * (0.25 + 0.2 * (b % 2));
+          const ox = W * (0.15 + 0.7 * ((b * 0.37 + 0.5) % 1)), oy = H * (0.2 + 0.25 * ((b * 0.53) % 1));
           for (let i = 0; i < per; i++) {
-            const el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            const size = 20 + Math.random() * 26, color = COLORS[(i + b) % COLORS.length];
-            el.setAttribute("viewBox", "0 0 40 40"); el.setAttribute("width", size); el.setAttribute("height", size);
-            el.innerHTML = `<path d="${i % 2 ? STAR_P : HEART_P}" fill="${color}" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>`;
+            let el;
+            if (i % 3 === 2) {
+              el = document.createElement("span"); el.className = "emo"; el.textContent = EMO[(i + b * 5) % EMO.length];
+              el.style.fontSize = rnd(22, 40) + "px";
+            } else {
+              el = document.createElementNS(SVGNS, "svg");
+              const size = rnd(18, 42), color = COLORS[(i + b) % COLORS.length];
+              el.setAttribute("viewBox", "0 0 40 40"); el.setAttribute("width", size); el.setAttribute("height", size);
+              el.innerHTML = `<path d="${SHAPES[(i + b) % 3]}" fill="${color}" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>`;
+            }
             el.style.left = ox + "px"; el.style.top = oy + "px";
             layer.appendChild(el);
-            const ang = Math.random() * Math.PI * 2, dist = (reduce ? 60 : 110) + Math.random() * Math.min(W, H) * 0.35;
+            const ang = Math.random() * Math.PI * 2, dist = (reduce ? 60 : 100) + Math.random() * Math.min(W, H) * 0.38;
             const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist, rot = (Math.random() - 0.5) * 540;
             el.animate([
               {transform: "translate(-50%, -50%) scale(0) rotate(0deg)", opacity: 1},
-              {transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.1) rotate(${rot * 0.6}deg)`, opacity: 1, offset: 0.45},
-              {transform: `translate(calc(-50% + ${dx * 1.1}px), calc(-50% + ${dy + 160}px)) scale(0.8) rotate(${rot}deg)`, opacity: 0}
-            ], {duration: 1700 + Math.random() * 900, delay: b * 380, easing: "cubic-bezier(.15,.75,.35,1)", fill: "both"});
+              {transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.15) rotate(${rot * 0.6}deg)`, opacity: 1, offset: 0.45},
+              {transform: `translate(calc(-50% + ${dx * 1.1}px), calc(-50% + ${dy + 180}px)) scale(0.8) rotate(${rot}deg)`, opacity: 0}
+            ], {duration: rnd(1800, 2800), delay: b * 420, easing: "cubic-bezier(.15,.75,.35,1)", fill: "both"});
           }
         }
-        setTimeout(() => layer.remove(), Math.max(bursts * 380 + 2800, 4000));
+        if (!reduce) {
+          // 2) 위에서 내려오는 알록달록 색종이 (흔들흔들)
+          const CONF = COLORS.concat(["#FFFFFF", "#FFC6A8"]);
+          for (let i = 0; i < 46; i++) {
+            const el = document.createElement("i"); el.className = "conf";
+            const w = rnd(7, 12), h = rnd(12, 20);
+            el.style.cssText = `left:${rnd(0, W)}px;width:${w}px;height:${h}px;background:${CONF[i % CONF.length]};${i % 4 === 0 ? "border-radius:50%;height:" + w + "px;" : ""}`;
+            layer.appendChild(el);
+            const sway = rnd(30, 70) * (i % 2 ? 1 : -1), spin = rnd(360, 900);
+            el.animate([
+              {transform: "translate(0, 0) rotate(0deg)"},
+              {transform: `translate(${sway}px, ${H * 0.35}px) rotate(${spin * 0.35}deg)`, offset: 0.33},
+              {transform: `translate(${-sway}px, ${H * 0.7}px) rotate(${spin * 0.7}deg)`, offset: 0.66},
+              {transform: `translate(${sway * 0.5}px, ${H + 60}px) rotate(${spin}deg)`}
+            ], {duration: rnd(3200, 5000), delay: rnd(200, 1800), easing: "linear", fill: "both"});
+          }
+          // 3) 아래에서 떠오르는 비눗방울
+          for (let i = 0; i < 16; i++) {
+            const el = document.createElement("i"); el.className = "bub";
+            const s = rnd(18, 54), x = rnd(0, W - s);
+            el.style.cssText = `left:${x}px;top:${H + 10}px;width:${s}px;height:${s}px;`;
+            layer.appendChild(el);
+            const drift = rnd(-60, 60);
+            el.animate([
+              {transform: "translate(0, 0) scale(.6)", opacity: 0},
+              {transform: `translate(${drift * 0.4}px, ${-H * 0.3}px) scale(1)`, opacity: 1, offset: 0.25},
+              {transform: `translate(${-drift * 0.3}px, ${-H * 0.65}px) scale(1)`, opacity: 1, offset: 0.7},
+              {transform: `translate(${drift}px, ${-H * 0.85}px) scale(1.25)`, opacity: 0}
+            ], {duration: rnd(3200, 4600), delay: rnd(300, 1600), easing: "ease-out", fill: "both"});
+          }
+          // 4) 칭찬 멘트 둘레에서 반짝반짝
+          for (let i = 0; i < 12; i++) {
+            const el = document.createElementNS(SVGNS, "svg"), s = rnd(14, 26);
+            el.setAttribute("viewBox", "0 0 40 40"); el.setAttribute("width", s); el.setAttribute("height", s);
+            el.innerHTML = `<path d="M20 0 C22 14 26 18 40 20 C26 22 22 26 20 40 C18 26 14 22 0 20 C14 18 18 14 20 0z" fill="${i % 2 ? "#FFE08A" : "#FFFFFF"}" stroke="#F4B4C9" stroke-width="1.5"/>`;
+            const ang = (i / 12) * Math.PI * 2, rx = Math.min(W * 0.42, 230), ry = 120;
+            el.style.left = (W / 2 + Math.cos(ang) * rx) + "px"; el.style.top = (H * 0.4 + Math.sin(ang) * ry) + "px";
+            layer.appendChild(el);
+            el.animate([
+              {transform: "translate(-50%, -50%) scale(0) rotate(0deg)", opacity: 0},
+              {transform: "translate(-50%, -50%) scale(1.2) rotate(45deg)", opacity: 1, offset: 0.5},
+              {transform: "translate(-50%, -50%) scale(0) rotate(90deg)", opacity: 0}
+            ], {duration: 900, delay: 500 + i * 140, iterations: 3, easing: "ease-in-out", fill: "both"});
+          }
+        }
+        setTimeout(() => layer.remove(), reduce ? 5000 : 7600);
       };
       document.querySelector(".today-h").addEventListener("click", party);
       try {
